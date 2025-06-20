@@ -1,9 +1,8 @@
-# Main analysis of KBS Ladybeetle 2020 data, Coccinella 
-# septempunctata and Harmonia axyridis niche partitioning
+# Main analysis of KBS Ladybeetle 2024 data, all species niche partitioning and phenology
 
 #bring data into R
 
-LB<-read.csv(file="data/KBS_Haxy_C7_1989-2020.csv", header=T,
+LB<-read.csv(file="data/LTER2024_working_alldata.csv", header=T,
              na.strings=c(NA))
 
 
@@ -13,6 +12,13 @@ summary(LB)
 #clean data
 #first, we fix dates, make them ISO'ed
 library(lubridate)
+ #previous format had capitalized dates and changed the name of the various columns- let's harmonize that
+
+colnames(LB)[which(names(LB) == "Date")] <- "DATE"
+colnames(LB)[which(names(LB) == "ADULTS")] <- "SumOfADULTS"
+colnames(LB)[which(names(LB) == "TREAT_DESC")] <- "TREAT"
+colnames(LB)[which(names(LB) == "Replicate")] <- "REPLICATE"
+
 # 
 # #not run
 # LB$newdate<-mdy(LB$DATE)#parses the date format used for the forest plots
@@ -24,12 +30,14 @@ library(lubridate)
 
 
 #Christie's solution: brute force removal of timestamps
-LB$DATE<-gsub(" 0:00", "", LB$DATE)#remove time stamp strings
+#access appended timestamps in A NEW FORMAT OMG
+LB$DATE<-gsub(" 0:00:00", "", LB$DATE)#remove time stamp strings
 
 LB$newdate<-mdy(LB$DATE)#parses the date format now used by all observations
 
 LB$DOY<-yday(LB$newdate)
 LB$week<-isoweek(LB$newdate)
+LB$Year<-year(LB$newdate)
 
 summary(LB)#bingo! looks like it worked!
 
