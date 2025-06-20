@@ -2,7 +2,7 @@
 
 #bring data into R
 
-LB<-read.csv(file="data/LTER2024_working_alldata.csv", header=T,
+LB<-read.csv(file="data/LTER2024_working_alldata1.csv", header=T,
              na.strings=c(NA))
 
 
@@ -44,7 +44,7 @@ summary(LB)#bingo! looks like it worked!
 
 #let's reorder our habitats right here at the top
 LB$HABITAT<-factor(LB$HABITAT, 
-                   levels=c("maize", "soybeans","wheat", "alfalfa", "poplar", "ES", "Coniferous", "Deciduous", "Succesional"))
+                   levels=c("maize", "soybeans","wheat", "alfalfa", "poplar", "ES", "CF", "DF", "SF"))
 #and relabel them so they're in the same case
 levels(LB$HABITAT)<-c("maize", "soybean","wheat", "alfalfa", "poplar", "ES", "coniferous", "deciduous", "succesional")
 
@@ -89,17 +89,17 @@ lb_weekly_culled<-lb_weekly[which(lb_weekly$week<=35),]
 
 library(ggplot2)
 
-lb_boxplot<-ggplot(lb_weekly, aes(x=TREAT_CAT, y=SumOfADULTS, fill=SPID))+
+lb_boxplot<-ggplot(lb_weekly_culled, aes(x=TREAT_CAT, y=SumOfADULTS, fill=SPID))+
   geom_boxplot()
 lb_boxplot
 
 #let's try re-aggregating our data at a yearly resolution
-lb_yearly_captures<-aggregate(data=lb_weekly1994_culled, SumOfADULTS~ Year+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
-lb_yearly_N<-aggregate(data=lb_weekly1994_culled, TRAPS~ Year+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
+lb_yearly_captures<-aggregate(data=lb_weekly_culled, SumOfADULTS~ Year+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
+lb_yearly_N<-aggregate(data=lb_weekly_culled, TRAPS~ Year+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
 
 
 #also, just so we know what we're comparing here, how many of each species did we catch?
-lb_tots<-aggregate(data=lb_weekly1994_culled, SumOfADULTS~ SPID, FUN=sum)
+lb_tots<-aggregate(data=lb_weekly_culled, SumOfADULTS~ SPID, FUN=sum)
 lb_tots
 
 #merge yearly captures with sampling intensity data
@@ -112,52 +112,55 @@ lb_yearly$pertrap<-lb_yearly$SumOfADULTS/lb_yearly$TRAPS
 #let's repeat the boxplot but with yearly data
 lb_yearly_boxplot<-ggplot(lb_yearly, aes(x=HABITAT, y=pertrap, fill=SPID))+
   geom_boxplot()+
-  scale_fill_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"))+
+  #comment out colour scale because it's only for 2 species- do throughout
+  #scale_fill_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"))+
   labs(x="Plant community", y="Captures per trap", fill="Species")+
   theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90))
 lb_yearly_boxplot
 
-#import ladybug icons
-library(jpeg)
-library(magick)
-library(cowplot)
-library(grid)
-
-
-harm<-magick::image_read("data/ha_square.jpeg")
-csept<-magick::image_read("data/c7_square.jpeg")
-lbset<-c(csept, harm)
-
-lbicon<-magick::image_append(image_scale(lbset, "100"), stack=TRUE)
+# #import ladybug icons
+# library(jpeg)
+# library(magick)
+# library(cowplot)
+# library(grid)
+# 
+# 
+# harm<-magick::image_read("data/ha_square.jpeg")
+# csept<-magick::image_read("data/c7_square.jpeg")
+# lbset<-c(csept, harm)
+# 
+# lbicon<-magick::image_append(image_scale(lbset, "100"), stack=TRUE)
 
 #let's look at the populations over time instead
 lb_yearly_plot<-ggplot(lb_yearly, aes(x=Year, y=SumOfADULTS, fill=SPID, shape=SPID, linetype=SPID, color=SPID))+
   geom_point(size=0.5, position="jitter", alpha=0.5)+
   geom_smooth()+
-  scale_fill_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
-  scale_shape_manual(values=c(4, 1), labels=c("C7", "HA"), name="Species")+
-  scale_linetype_manual(values=c(1, 1), labels=c("C7", "HA"), name="Species")+
+  facet_wrap(~SPID, ncol=2)+
+  #scale_fill_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+  #scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+  #scale_shape_manual(values=c(4, 1), labels=c("C7", "HA"), name="Species")+
+  #scale_linetype_manual(values=c(1, 1), labels=c("C7", "HA"), name="Species")+
   labs(x="Year", y="Captures per trap")+
-  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
-  annotation_custom(rasterGrob(lbicon), 2016.05, 2017.95, 153, 183)
+  theme_classic()+ theme(legend.background = element_rect(fill='transparent'))#+
+  
+  #annotation_custom(rasterGrob(lbicon), 2016.05, 2017.95, 153, 183)
 
 lb_yearly_plot
 
 
 
-rawtrends<-plot_grid(lb_yearly_plot, lb_yearly_boxplot,  ncol=1, rel_widths=c(1), labels=c('A', 'B'), 
-                     align="v", axis="l")
-
-rawtrends
-
-pdf("plots/figurerawtrends.pdf", height=8, width=6, bg="white")
-rawtrends
-dev.off()
-
-svg("plots/figurerawtrends.svg", height=8, width=6, bg="white")
-rawtrends
-dev.off()
+# rawtrends<-plot_grid(lb_yearly_plot, lb_yearly_boxplot,  ncol=1, rel_widths=c(1), labels=c('A', 'B'), 
+#                      align="v", axis="l")
+# 
+# rawtrends
+# 
+# pdf("plots/figurerawtrends.pdf", height=8, width=6, bg="white")
+# rawtrends
+# dev.off()
+# 
+# svg("plots/figurerawtrends.svg", height=8, width=6, bg="white")
+# rawtrends
+# dev.off()
 
 
 
@@ -179,7 +182,7 @@ dev.off()
 # download.file(url, destfile)
 
 
-weather<-read.csv(file="data/kbsweather.csv",
+weather<-read.csv(file="data/kbsweather2025.csv",
                     header=T, sep=",", na.strings="", comment.char = '#')
 #extract day of year, so we have a continuous variable running for each year.
 #since we're in a temperate northern climate, this is convenient- not too 
@@ -197,7 +200,7 @@ plot(weather$DOY, weather$precipitation)
 
 #let's cut out the data from before 1989 so we can process the weather data more quickly. Al so we'll cut off the weather
 #data that's causing us problems- we don't need it anyway
-weather<-subset(weather, weather$year>=1989& weather$year<=2020)
+weather<-subset(weather, weather$year>=1989& weather$year<=2024)
 
 
 #lets also get rid of the variables we don't need:
@@ -471,7 +474,7 @@ plot(weather$DOY, weather$prec.accum.0)
 
 weather1<-group_by(weather, year, week)
 
-weather_weekly<-summarize(weather1,
+weather_weekly<-dplyr::summarize(weather1,
                           mean.prec=mean(precipitation),
                           rain.days=sum(rain.days),
                           weekly.precip=max(prec.accum),
@@ -486,8 +489,8 @@ weather_weekly<-summarize(weather1,
 
 #let's merge in the weather data to the ladybeetle data
 #first rename the year column in one of the datasets
-lb_weekly1994_culled<-rename(lb_weekly1994_culled, year=Year)
-lb_all<-merge(lb_weekly1994_culled, weather_weekly)
+lb_weekly_culled<-rename(lb_weekly_culled, year=Year)
+lb_all<-merge(lb_weekly_culled, weather_weekly)
 
 #while we're at this, let's make some yearly summary data that will allow us to
 #characterize weather by year. Since it looks like seasonality plays a role in within-year 
