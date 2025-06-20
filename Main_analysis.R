@@ -53,6 +53,13 @@ levels(LB$HABITAT)<-c("maize", "soybean","wheat", "alfalfa", "poplar", "ES", "co
 #we need to aggregate the data by rep first, because subsamples are zero-biased
 library(dplyr)
 
+#filter the data for only LB species
+
+lb_list<-c("ABIPN", "BURSI", "C7", "CMAC", "CSTIG","CTRIF", "CYCSP", "H13", "HAXY", "HCONV","HGLAC", 
+           "HPARN", "HVAR", "PQUA")
+
+LB<-LB[which(LB$SPID %in% lb_list),] 
+
 lb_rep<-aggregate(data=LB, SumOfADULTS~ Year+week+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
 lb_rep_N<-aggregate(data=LB, SumOfADULTS~ Year+week+TREAT+HABITAT+REPLICATE+SPID, FUN=length)
 #change variable name to reflect that it's number of traps
@@ -60,27 +67,29 @@ lb_rep_N<-rename(lb_rep_N, TRAPS=SumOfADULTS)
 #merge trap data into lb_rep data frame
 
 lb_weekly<-merge(lb_rep, lb_rep_N)
-#cull data prior to Harmonia's arrival in 1994
-lb_weekly1994<-lb_weekly[which(lb_weekly$Year>=1994),]
+
+#in previous analysis we culled early data but we want to keep it in for this analysis
+##cull data prior to Harmonia's arrival in 1994
+#lb_weekly1994<-lb_weekly[which(lb_weekly$Year>=1994),]
 
 #let's figure out how to re-categorize our treatments. Remember T1-4 are annual, 5-7 are perennial, and the rest are forest
 annuallist<-c("T1","T2", "T3", "T4" )
 perlist<-c("T5", "T6", "T7")
-lb_weekly1994$TREAT_CAT<-ifelse(lb_weekly1994$TREAT %in% annuallist, "Annual",
-                                (ifelse(lb_weekly1994$TREAT %in% perlist, "Perennial", "Forest")))
+lb_weekly$TREAT_CAT<-ifelse(lb_weekly$TREAT %in% annuallist, "Annual",
+                                (ifelse(lb_weekly$TREAT %in% perlist, "Perennial", "Forest")))
 
 #remember to cull the data at a standard time point 
 #(we use DOY 222 in other studies which corresponds to week 32, 
 # but this cuts out a major harmonia activity peak, so let's use first week of sept
 # =week 35)
 
-lb_weekly1994_culled<-lb_weekly1994[which(lb_weekly1994$week<=35),]
-    
-  
+lb_weekly_culled<-lb_weekly[which(lb_weekly$week<=35),]
+
+
 
 library(ggplot2)
 
-lb_boxplot<-ggplot(lb_rep, aes(x=TREAT, y=SumOfADULTS, fill=SPID))+
+lb_boxplot<-ggplot(lb_weekly, aes(x=TREAT_CAT, y=SumOfADULTS, fill=SPID))+
   geom_boxplot()
 lb_boxplot
 
