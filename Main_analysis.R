@@ -616,13 +616,14 @@ landscape.year<-dcast(lb_all, year+REPLICATE+SPID~HABITAT,
 
 landscape.week<-dcast(lb_all, year+week+SPID~HABITAT,
                       value.var ="SumOfADULTS",  sum)
-#because we have some rep by week combinations with zero observations, we must remove them prior to analysis
+#because we have some rep by week/year combinations with zero observations, we must remove them prior to analysis
+landscape.year.1<-landscape.year[rowSums(landscape.year[4:12])>2,]
 landscape.week.1<-landscape.week[rowSums(landscape.week[4:12])>2,]
 
 #strip out the context- yes I know! this seems counter-intuitive and awful
 #but vegan (and most community analysis packages) want your response variable as its own object
 
-com.matrix.year<-landscape.year[,4:12]
+com.matrix.year<-landscape.year.1[,4:12]
 com.matrix.week<-landscape.week.1[,4:12]
 
 #set up ordination with year data
@@ -631,19 +632,28 @@ ord.year<-metaMDS(com.matrix.year, autotransform=TRUE)
 ord.year
 
 plot(ord.year, disp='sites', type='n')
-points(ord.year, display="sites", select=which(landscape.year$SPID=="HAXY"), pch=15, col="orange")
-points(ord.year, display="sites", select=which(landscape.year$SPID=="C7"), pch=19, col="red")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="orange", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="HAXY")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="red", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="C7")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="pink", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow4", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="PQUA")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="blue", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
+##add in other species
+
+#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="HAXY"), pch=15, col="orange")
+#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="C7"), pch=19, col="red")
+#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="CMAC"), pch=18, col="pink")
+#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="PQUA"), pch=16, col="yellow4")
 ordilabel(ord.year, display="species", cex=0.75, col="black")
 
 #bring the relevant environmental data back into our enviromental frame
-yearly.context<-merge(landscape.year, weather_yearly, all.x = T)
+yearly.context<-merge(landscape.year.1, weather_yearly, all.x = T)
 
 
-#is the spatiotemporal distribution of harmonia different from that of C7 over years?
+#is the spatiotemporal distribution of ladybeetle species differnet over years?
 #we will do a permanova to check
-specmod.y<-adonis(com.matrix.year~SPID, data=landscape.year, method="bray")
+specmod.y<-adonis2(com.matrix.year~SPID, data=landscape.year.1, method="bray")
+summary(specmod.y)
 specmod.y
-
 
 fit.year<-envfit(ord.year~year+dd35.dif+
                    precip35.dif, data=yearly.context, perm=999)
@@ -728,9 +738,9 @@ fudgeyy<-c(-0.08, -0.06, 0.12)
 
 yearnmds<-ggplot()+
   geom_point(data=year.scores.species,
-             aes(x=NMDS1,y=NMDS2,shape=landscape.year$SPID,colour=landscape.year$SPID), size=1)+# add the point markers
-  scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
-  scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
+             aes(x=NMDS1,y=NMDS2,shape=landscape.year.1$SPID,colour=landscape.year.1$SPID), size=1)+# add the point markers
+  #scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
+  #scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
   geom_segment(data=year.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
                arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
   geom_label(data=year.data.fit, aes(x=NMDS1+fudgexy, y=NMDS2+fudgeyy, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
