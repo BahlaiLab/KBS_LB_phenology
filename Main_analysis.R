@@ -53,10 +53,10 @@ levels(LB$HABITAT)<-c("maize", "soybean","wheat", "alfalfa", "poplar", "ES", "co
 #we need to aggregate the data by rep first, because subsamples are zero-biased
 library(dplyr)
 
-#filter the data for only LB species
+#filter the data for only LB species we want to focus on- the native species for this study!
 
-lb_list<-c("ABIPN", "BURSI", "C7", "CMAC", "CSTIG","CTRIF", "CYCSP", "H13", "HAXY", "HCONV","HGLAC", 
-           "HPARN", "HVAR", "PQUA")
+lb_list<-c("ABIPN", "BURSI", "CMAC", "CSTIG","CTRIF", "CYCSP", "H13", "HCONV","HGLAC", 
+           "HPARN")
 
 LB<-LB[which(LB$SPID %in% lb_list),] 
 
@@ -631,15 +631,22 @@ com.matrix.week<-landscape.week.1[,4:12]
 ord.year<-metaMDS(com.matrix.year, autotransform=TRUE)
 ord.year
 
-plot(ord.year, disp='sites', type='n')
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="orange", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="HAXY")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="red", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="C7")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="pink", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow4", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="PQUA")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="blue", kind="sd", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
-##add in other species
+#we will only plot the 7 most common species (captures >1000)
 
-#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="HAXY"), pch=15, col="orange")
+plot(ord.year, disp='sites', type='n')
+#maybe display the most common as ellipses and less common as points?
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="orange", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="red", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="pink", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow4", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="blue", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="purple", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="coral", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="palegreen", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="violet", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
+
+#points(ord.year, display="sites", select=which(landscape.year.1$SPID=="ABIPN"), pch=15, col="orange")
 #points(ord.year, display="sites", select=which(landscape.year.1$SPID=="C7"), pch=19, col="red")
 #points(ord.year, display="sites", select=which(landscape.year.1$SPID=="CMAC"), pch=18, col="pink")
 #points(ord.year, display="sites", select=which(landscape.year.1$SPID=="PQUA"), pch=16, col="yellow4")
@@ -680,8 +687,18 @@ ord.week<-metaMDS(com.matrix.week, autotransform=TRUE)
 ord.week
 
 plot(ord.week, disp='sites', type='n')
-points(ord.week, display="sites", select=which(landscape.week.1$SPID=="HAXY"), pch=15, cex=0.5,col="orange")
-points(ord.week, display="sites", select=which(landscape.week.1$SPID=="C7"), pch=19, cex=0.5, col="red")
+#match up formatting to above
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="orange", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="red", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="pink", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="yellow4", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="yellow", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="blue", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="purple", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="coral", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="palegreen", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="violet", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
+
 ordilabel(ord.week, display="species", cex=0.75, col="black")
 
 #bring the relevant environmental data back into our environmental frame
@@ -689,7 +706,7 @@ weekly.context<-merge(landscape.week.1, weather_weekly, all.x = T)
 
 #is the spatiotemporal distribution of harmonia different from that of C7?
 #we will do a permanova to check
-specmod<-adonis(com.matrix.week~SPID, data=landscape.week.1, method="bray")
+specmod<-adonis2(com.matrix.week~SPID, data=landscape.week.1, method="bray")
 specmod
 
 #we're performing a model selection, using backwards selection from all environmental variables
@@ -713,91 +730,114 @@ plot(fit.week)
 # dev.off()
 
 
+##### not run- section where we're trying to bring these plots into ggplot- it's just too messy to do this with 14 
+# species and base r is easier to customize for this
 
-#built a two-panel PDF
-#guh, looks like with the base vegan plots it's still easiest to do the base R
-#can we turn these plots into grobs? extract the data, remember we've transposed it so plant 
-#community was across the top of the matrix
-
-#yearly
-year.scores.species<-as.data.frame(scores(ord.year, "site"))
-year.scores.plant<-as.data.frame(scores(ord.year, "species"))
-year.scores.plant$Community <- rownames(year.scores.plant)
-
-
-arrow_factor<-ordiArrowMul(fit.year)
-year.data.fit<-as.data.frame(scores(fit.year, display="vectors"))*arrow_factor
-year.data.fit$vari<-rownames(year.data.fit)
-
-#make the names on the vectors nicer
-year.data.fit$vari<-gsub("precip35.dif","precip35", year.data.fit$vari)
-year.data.fit$vari<-gsub("dd35.dif","dd35", year.data.fit$vari)
-arrow_factor<-ordiArrowMul(fit.year)
-fudgexy<-c(0.1, 0.14, -0.2)#jitter the vector labels a bit
-fudgeyy<-c(-0.08, -0.06, 0.12)
-
-yearnmds<-ggplot()+
-  geom_point(data=year.scores.species,
-             aes(x=NMDS1,y=NMDS2,shape=landscape.year.1$SPID,colour=landscape.year.1$SPID), size=1)+# add the point markers
-  #scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
-  #scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
-  geom_segment(data=year.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
-               arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
-  geom_label(data=year.data.fit, aes(x=NMDS1+fudgexy, y=NMDS2+fudgeyy, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
-  geom_label(data=year.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
-  coord_fixed()+
-  theme_classic()+
-  theme(legend.position = "none")
-
-yearnmds
-
-#weekly
-
-
-week.scores.species<-as.data.frame(scores(ord.week, "site"))
-week.scores.plant<-as.data.frame(scores(ord.week, "species"))
-week.scores.plant$Community <- rownames(week.scores.plant)
-
-
-arrow_factorw<-ordiArrowMul(fit.week)
-week.data.fit<-as.data.frame(scores(fit.week, display="vectors"))*arrow_factorw
-week.data.fit$vari<-rownames(week.data.fit)
-
-#make the names on the vectors nicer
-week.data.fit$vari<-gsub("yearly.precip.accum","precip", week.data.fit$vari)
-week.data.fit$vari<-gsub("yearly.dd.accum","dd", week.data.fit$vari)
-fudgex<-c(0.15, -0.285, 0)#jitter the vector labels a bit
-fudgey<-c(0.15, -0.08, 0.17)#jitter the vector labels a bit
-
-weeknmds<-ggplot()+
-  geom_point(data=week.scores.species,
-             aes(x=NMDS1,y=NMDS2,shape=landscape.week.1$SPID,colour=landscape.week.1$SPID), size=1)+# add the point markers
-  scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
-  scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
-  geom_segment(data=week.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
-               arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
-  geom_label(data=week.data.fit, aes(x=NMDS1+fudgex, y=NMDS2+fudgey, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
-  geom_label(data=week.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
-  coord_fixed()+
-  theme_classic()+
-  theme(legend.position = "none")
-
-weeknmds
-
-#ok, finally. Put it together
-ggnmds<-plot_grid(yearnmds, weeknmds,  ncol=1, rel_widths=c(1), labels=c('A', 'B'), 
-                     align="h", axis="l")
-
-ggnmds
-
-
-
-pdf("plots/figureNMSDs1.pdf", height=10, width=6)
-ggnmds
-dev.off()
-
-
-
+# #built a two-panel PDF
+# #guh, looks like with the base vegan plots it's still easiest to do the base R
+# #can we turn these plots into grobs? extract the data, remember we've transposed it so plant 
+# #community was across the top of the matrix
+# 
+# #yearly
+# year.scores.species<-as.data.frame(scores(ord.year, "site"))
+# year.scores.plant<-as.data.frame(scores(ord.year, "species"))
+# year.scores.plant$Community <- rownames(year.scores.plant)
+# 
+# 
+# arrow_factor<-ordiArrowMul(fit.year)
+# year.data.fit<-as.data.frame(scores(fit.year, display="vectors"))*arrow_factor
+# year.data.fit$vari<-rownames(year.data.fit)
+# 
+# #make the names on the vectors nicer
+# year.data.fit$vari<-gsub("precip35.dif","precip35", year.data.fit$vari)
+# year.data.fit$vari<-gsub("dd35.dif","dd35", year.data.fit$vari)
+# arrow_factor<-ordiArrowMul(fit.year)
+# fudgexy<-c(0.1, 0.14, -0.2)#jitter the vector labels a bit
+# fudgeyy<-c(-0.08, -0.06, 0.12)
+# 
+# 
+# library(dplyr)
+# year.ellipse.labels <- year.scores.species %>%
+#   group_by(landscape.year.1$SPID) %>%
+#   summarise(NMDS1 = mean(NMDS1),
+#             NMDS2 = mean(NMDS2))
+# 
+# names(year.ellipse.labels)[1] <- 'SPID'
+# 
+# year.hulls <- year.scores.species %>%
+#   group_by(landscape.year.1$SPID) %>%
+#   slice(chull(NMDS1, NMDS2))
+# names(year.hulls)[3] <- 'SPID'
+# 
+# 
+# yearnmds<-ggplot()+
+#   geom_point(data=year.scores.species,
+#              aes(x=NMDS1,y=NMDS2,shape=landscape.year.1$SPID,colour=landscape.year.1$SPID), size=1)+# add the point markers
+#   #scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
+#   #scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
+#   geom_polygon(data = year.hulls,
+#                aes(x = NMDS1, y = NMDS2,  group = SPID, fill=SPID),
+#                alpha = 0.3, color = "black", linewidth = 0.3)+
+#   geom_text(data = year.ellipse.labels,
+#             aes(x = NMDS1, y = NMDS2, label = SPID),
+#              size = 5, fontface = "bold", color = "black")+
+#   geom_segment(data=year.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
+#                arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
+#   geom_label(data=year.data.fit, aes(x=NMDS1+fudgexy, y=NMDS2+fudgeyy, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
+#   geom_label(data=year.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
+#   coord_fixed()+
+#   theme_classic()+
+#   theme(legend.position = "none")
+# 
+# yearnmds
+# 
+# #weekly
+# 
+# 
+# week.scores.species<-as.data.frame(scores(ord.week, "site"))
+# week.scores.plant<-as.data.frame(scores(ord.week, "species"))
+# week.scores.plant$Community <- rownames(week.scores.plant)
+# 
+# 
+# arrow_factorw<-ordiArrowMul(fit.week)
+# week.data.fit<-as.data.frame(scores(fit.week, display="vectors"))*arrow_factorw
+# week.data.fit$vari<-rownames(week.data.fit)
+# 
+# #make the names on the vectors nicer
+# week.data.fit$vari<-gsub("yearly.precip.accum","precip", week.data.fit$vari)
+# week.data.fit$vari<-gsub("yearly.dd.accum","dd", week.data.fit$vari)
+# fudgex<-c(0.15, -0.285, 0)#jitter the vector labels a bit
+# fudgey<-c(0.15, -0.08, 0.17)#jitter the vector labels a bit
+# 
+# weeknmds<-ggplot()+
+#   geom_point(data=week.scores.species,
+#              aes(x=NMDS1,y=NMDS2,shape=landscape.week.1$SPID,colour=landscape.week.1$SPID), size=1)+# add the point markers
+#   scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
+#   scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
+#   geom_segment(data=week.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
+#                arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
+#   geom_label(data=week.data.fit, aes(x=NMDS1+fudgex, y=NMDS2+fudgey, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
+#   geom_label(data=week.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
+#   coord_fixed()+
+#   theme_classic()+
+#   theme(legend.position = "none")
+# 
+# weeknmds
+# 
+# #ok, finally. Put it together
+# ggnmds<-plot_grid(yearnmds, weeknmds,  ncol=1, rel_widths=c(1), labels=c('A', 'B'), 
+#                      align="h", axis="l")
+# 
+# ggnmds
+# 
+# 
+# 
+# pdf("plots/figureNMSDs1.pdf", height=10, width=6)
+# ggnmds
+# dev.off()
+# 
+# 
+# 
 
 
 # let's rough in our gam models. Just like with the multivariate analysis, we'll look at
@@ -806,107 +846,84 @@ library(mgcv)
 library(visreg)
 library(ggpubr)
 library(Hmisc)
+library(cowplot)
 
 #pearson correlation of environmental parameters
 
 round(cor(lb_all[10:19], method="pearson"), digits=2)
 #start withe the drivers of within-year variation
 
-library(psych)
-pairs.panels(lb_all[c(10,11,13:19)], #drop 'weekly precipitation because it's = mean daily precip*7
-             method = "pearson", # correlation method
-             hist.col = "#00AFBB",
-             density = TRUE,  # show density plots
-             ellipses = FALSE # show correlation ellipses
-)
 
-pdf("plots/figurewithinyearpairsplot.pdf", height=6, width=8)
-pairs.panels(lb_all[c(10,11,13:19)], #drop 'weekly precipitation because it's = mean daily precip*7
-             method = "pearson", # correlation method
-             hist.col = "#00AFBB",
-             density = TRUE,  # show density plots
-             ellipses = FALSE # show correlation ellipses
-)
-dev.off()
 
-gam_lb<-gam(SumOfADULTS~s(yearly.dd.accum, by=as.factor(SPID), sp=1)+
-              s(max.rainfall, by=as.factor(SPID), sp=1)+
-              s(max.temp, by=as.factor(SPID), sp=1)+
-              HABITAT*SPID+
-              s(year, by=as.factor(SPID), sp=1)+
-              offset(log(TRAPS)), method="REML", data=lb_all, family="quasipoisson")
-summary(gam_lb)
-anova.gam(gam_lb)
 
-#check concurvity
-concurvity(gam_lb)
-#looks fine, sweet!
-gam.check(gam_lb)
+#warning- this model takes  while to run but I *want* to do it with the interactions dangit
+# I have been broken. This cannot run as an all-species model so we'll do it one species at a time
+
+lb_all.abipn<-lb_all[which(lb_all$SPID=="ABIPN"),]
+
+gam_lb.abipn<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+              s(max.rainfall, sp=1)+
+              s(max.temp, sp=1)+
+              HABITAT+
+              s(year, sp=1)+
+              offset(log(TRAPS)), method="REML", data=lb_all.abipn, family="quasipoisson")
+summary(gam_lb.abipn)
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
 
 #let's visualize this!
-#must detach psych- it conflicts with ggplot
-detach(package:psych,unload=TRUE)
+nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
 
-withinyear.dd<-visreg(gam_lb, "yearly.dd.accum", by="SPID", partial=FALSE, rug=FALSE, 
-                      overlay=TRUE, scale="response", gg=TRUE,
-                      line=list(lty=1))+
-  scale_fill_manual(values=alpha(c("darkred", "darkorange"), 0.4), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+withinyear.dd.abipn<-visreg(gam_lb.abipn, "yearly.dd.accum", partial=F, rug=FALSE, 
+                      overlay=T, scale="response", gg=TRUE,
+                      line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Degree day accumulation", y="")+
-  theme_classic()+ theme(legend.position = "none")+
-  coord_cartesian(ylim=c(0, 8))
+  theme_classic()+ theme(legend.position = "none")
 
-withinyear.dd
+withinyear.dd.abipn
 
-withinyear.rain<-visreg(gam_lb, "max.rainfall", "SPID", partial=FALSE, rug=FALSE, 
-       overlay=TRUE, scale="response", gg=TRUE, line=list(lty=1))+
-  scale_fill_manual(values=alpha(c("darkred", "darkorange"), 0.4), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+withinyear.rain.abipn<-visreg(gam_lb.abipn, "max.rainfall",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Maximum daily rainfall within week (mm)", y="")+
-  theme_classic()+ theme(legend.position = "none")+
-  coord_cartesian(ylim=c(0, 8))
+  theme_classic()+ theme(legend.position = "none")
 
-withinyear.rain
+withinyear.rain.abipn
 
-withinyear.temp<-visreg(gam_lb, "max.temp", "SPID", partial=FALSE, rug=FALSE, 
-                        overlay=TRUE, scale="response", gg=TRUE, line=list(lty=1))+
-  scale_fill_manual(values=alpha(c("darkred", "darkorange"), 0.4), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+withinyear.temp.abipn<-visreg(gam_lb.abipn, "max.temp",  partial=F, rug=FALSE, 
+                        overlay=T, scale="response", gg=TRUE,
+                        line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Maximum temperature within week (C)", y="")+
-  theme_classic()+ theme(legend.position = "none")+
-  coord_cartesian(ylim=c(0, 8))
-
-withinyear.temp
+  theme_classic()+ theme(legend.position = "none")
+withinyear.temp.abipn
 
 
 
-withinyear.habitat<-visreg(gam_lb, "HABITAT","SPID", partial=FALSE, rug=FALSE, 
-       overlay=TRUE, scale="response", gg=TRUE,
-       line=list(lty=1))+
-  scale_fill_manual(values=alpha(c("darkred", "darkorange"), 0.4), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
+withinyear.habitat.abipn<-visreg(gam_lb.abipn, "HABITAT",  partial=F, rug=FALSE, 
+                           overlay=T, scale="response", gg=TRUE,
+                           line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Habitat", y="")+
-  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))+
-  coord_cartesian(ylim=c(0, 8))
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
 
-withinyear.habitat
+withinyear.habitat.abipn
 
-withinyear.yearly<-visreg(gam_lb, "year", "SPID", partial=FALSE, rug=FALSE, 
-       overlay=TRUE, scale="response", gg=TRUE,
-       line=list(lty=1))+
-  scale_fill_manual(values=alpha(c("darkred", "darkorange"), 0.4), labels=c("C7", "HA"), name="Species")+
-  scale_color_manual(values=c("darkred", "darkorange"), labels=c("C7", "HA"), name="Species")+
-  labs(x="Year\n\n\n", y="")+
-  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
-  coord_cartesian(ylim=c(0, 8))
+withinyear.yearly.abipn<-visreg(gam_lb.abipn, "year",   partial=F, rug=FALSE, 
+                          overlay=T, scale="response", gg=TRUE,
+                          line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))
 
-withinyear.yearly
+withinyear.yearly.abipn
 
 #plot the withinyear model all together:
 
-withinyear.modelplot<-plot_grid(withinyear.dd, withinyear.rain, withinyear.temp, withinyear.habitat, withinyear.yearly, 
-                              ncol=3, rel_widths=c(1, 1, 1), rel_heights = c(0.85, 1), labels=c('A', 'B', 'C', 'D', 'E'))
-withinyear.modelplot
+withinyear.modelplot.abipn<-plot_grid(withinyear.yearly.abipn,withinyear.dd.abipn, withinyear.rain.abipn, withinyear.temp.abipn, withinyear.habitat.abipn,  
+                              ncol=1, rel_heights = c(1, 1, 1, 1, 2), labels=c('A', 'B', 'C', 'D', 'E'), align="v")
+withinyear.modelplot.abipn
 
 #create overall y axis label
 partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
@@ -1047,26 +1064,6 @@ target_data<-lb_yearly_weather[,c(8,12:15,19:21)]
 cor(target_data, method = "pearson")
 #let's flag things that are >abs(0.3)
 
-library(psych)
-pairs.panels(target_data, 
-             method = "pearson", # correlation method
-             hist.col = "#00AFBB",
-             density = TRUE,  # show density plots
-             ellipses = FALSE # show correlation ellipses
-)
-
-
-pdf("plots/figurebetweenyearpairsplot.pdf", height=6, width=8)
-pairs.panels(target_data, 
-             method = "pearson", # correlation method
-             hist.col = "#00AFBB",
-             density = TRUE,  # show density plots
-             ellipses = FALSE # show correlation ellipses
-)
-dev.off()
-
-#must detach psych- it conflicts with ggplot
-detach(package:psych,unload=TRUE)
 
 #model selection criteria- add params one by one by highest F value.
 #in subsequent steps, eliminate params with >abs(0.3) Pearson correlation with any parameters in model
