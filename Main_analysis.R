@@ -859,6 +859,9 @@ round(cor(lb_all[10:19], method="pearson"), digits=2)
 #warning- this model takes  while to run but I *want* to do it with the interactions dangit
 # I have been broken. This cannot run as an all-species model so we'll do it one species at a time
 
+
+##################### abipn 
+
 lb_all.abipn<-lb_all[which(lb_all$SPID=="ABIPN"),]
 
 gam_lb.abipn<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
@@ -946,7 +949,7 @@ withinyear.plot.abipn<-plot_grid(partresid, withinyear.modelplot.abipn, ncol=2, 
 
 withinyear.plot.abipn
 
-pdf("plots/figurewithinyeargamabipn.pdf", height=5, width=10)
+pdf("plots/figurewithinyeargamabipn.pdf", height=10, width=5)
 withinyear.plot.abipn
 dev.off()
 
@@ -1107,4 +1110,257 @@ predict(gam_lb.abipn, newData.abipn.habitat, type="link")
 
 
 #poplar 0.57, coniferous 0.67
+
+##################### bursi 
+
+lb_all.bursi<-lb_all[which(lb_all$SPID=="BURSI"),]
+
+gam_lb.bursi<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                    s(weekly.precip, sp=1)+
+                    s(max.temp, sp=1)+
+                    s(min.temp, sp=1)+ 
+                    HABITAT+
+                    s(year, sp=1)+
+                    offset(log(TRAPS)), method="REML", data=lb_all.bursi, family="quasipoisson")
+summary(gam_lb.bursi)
+
+#everything but min temp significant here
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+#let's visualize this!
+nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
+
+withinyear.dd.bursi<-visreg(gam_lb.bursi, "yearly.dd.accum", partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.bursi
+
+withinyear.rain.bursi<-visreg(gam_lb.bursi, "weekly.precip",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.bursi
+
+withinyear.temp.bursi<-visreg(gam_lb.bursi, "max.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.bursi
+
+withinyear.mintemp.bursi<-visreg(gam_lb.bursi, "min.temp",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.bursi
+
+withinyear.habitat.bursi<-visreg(gam_lb.bursi, "HABITAT",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.bursi
+
+withinyear.yearly.bursi<-visreg(gam_lb.bursi, "year",   partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[2]), fill=list(fill=nativepal[2], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.bursi
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.bursi<-plot_grid(withinyear.yearly.bursi,withinyear.dd.bursi,  withinyear.mintemp.bursi, withinyear.temp.bursi, withinyear.rain.bursi, withinyear.habitat.bursi,  
+                                      ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.bursi
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.bursi<-plot_grid(partresid, withinyear.modelplot.bursi, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.bursi
+
+pdf("plots/figurewithinyeargambursi.pdf", height=10, width=5)
+withinyear.plot.bursi
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for bursi, holding everything constant but degree days
+newData.bursi.dd <- with(lb_all.bursi,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=2006, #select year when this species is most abundant- 2006
+                                    weekly.precip=0, # species likes it dry (or very wet!)
+                                    max.temp=32, #species maxes near 32
+                                    min.temp=18, #species maxes near 18
+                                    SPID="BURSI", 
+                                    HABITAT="ES")) #species likes ES best
+
+#make the same frame but for 1 more degday
+newData.abipin.1.dd<- with(lb_all.bursi,
+                           data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                      TRAPS=5, 
+                                      year=2006, #select year when this species is most abundant- 2006
+                                      weekly.precip=0, # species likes it dry (or very wet!)
+                                      max.temp=32, #species maxes near 32
+                                      min.temp=18, #species maxes near 18
+                                      SPID="BURSI", 
+                                      HABITAT="ES")) #species likes ES best
+
+#make predictions
+predict.dd.bursi<-predict(gam_lb.bursi, newData.bursi.dd, type="link")
+predict.dd.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.dd, type="link")
+
+dd.bursi.der<-as.data.frame(cbind(newData.bursi.dd$yearly.dd.accum, predict.dd.bursi, predict.dd.bursi.1))
+dd.bursi.der$slope<-(dd.bursi.der$predict.dd.bursi.1-dd.bursi.der$predict.dd.bursi)/1
+
+#slope approaches zero at 642 degree days 
+#dd is significant in the model but data suggests one adult activity peak- one generation per year
+
+#create data for bursi, holding everything constant but minimum temperature
+newData.bursi.mint <- with(lb_all.bursi,
+                           data.frame(yearly.dd.accum = 700,
+                                      TRAPS=5, 
+                                      year=2006, #select year when this species is most abundant- 2006
+                                      weekly.precip=0, # species likes it dry (or very wet!)
+                                      max.temp=32, #species maxes near 32
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="BURSI", 
+                                      HABITAT="ES")) #species likes ES best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.mint<- with(lb_all.bursi,
+                             data.frame(yearly.dd.accum = 700,
+                                        TRAPS=5, 
+                                        year=2006, #select year when this species is most abundant- 2006
+                                        weekly.precip=0, # species likes it dry (or very wet!)
+                                        max.temp=32, #species maxes near 32
+                                        min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                        SPID="BURSI", 
+                                        HABITAT="ES")) #species likes ES best
+
+#make predictions
+predict.mint.bursi<-predict(gam_lb.bursi, newData.bursi.mint, type="link")
+predict.mint.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.mint, type="link")
+
+mint.bursi.der<-as.data.frame(cbind(newData.bursi.mint$min.temp, predict.mint.bursi, predict.mint.bursi.1))
+mint.bursi.der$slope<-(mint.bursi.der$predict.mint.bursi.1-mint.bursi.der$predict.mint.bursi)/1
+
+
+#not a significant factor in the model, slope changes very little in scale of data
+
+
+#create data for bursi, holding everything constant but maximum temperature
+newData.bursi.maxt <- with(lb_all.bursi,
+                           data.frame(yearly.dd.accum = 700,
+                                      TRAPS=5, 
+                                      year=2006, #select year when this species is most abundant- 2006
+                                      weekly.precip=0, # species likes it dry (or very wet!)
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp=18, #species maxes near 18
+                                      SPID="BURSI", 
+                                      HABITAT="ES")) #species likes ES best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.maxt<- with(lb_all.bursi,
+                             data.frame(yearly.dd.accum = 700,
+                                        TRAPS=5, 
+                                        year=2006, #select year when this species is most abundant- 2006
+                                        weekly.precip=0, # species likes it dry (or very wet!)
+                                        max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                        min.temp=18, #species maxes near 18
+                                        SPID="BURSI", 
+                                        HABITAT="ES")) #species likes ES best
+
+#make predictions
+predict.maxt.bursi<-predict(gam_lb.bursi, newData.bursi.maxt, type="link")
+predict.maxt.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.maxt, type="link")
+
+maxt.bursi.der<-as.data.frame(cbind(newData.bursi.maxt$max.temp, predict.maxt.bursi, predict.maxt.bursi.1))
+maxt.bursi.der$slope<-(maxt.bursi.der$predict.maxt.bursi.1-maxt.bursi.der$predict.maxt.bursi)/1
+
+
+#slope approaches zero at minimum temperature of 31.8C
+#significant factor in the model
+
+
+#create data for bursi, holding everything constant but precipitation
+newData.bursi.precip <- with(lb_all.bursi,
+                             data.frame(yearly.dd.accum = 700,
+                                        TRAPS=5, 
+                                        year=2006, #select year when this species is most abundant- 2006
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=32, #species maxes near 32
+                                        min.temp=18, #species maxes near 18
+                                        SPID="BURSI", 
+                                        HABITAT="ES")) #species likes ES best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.precip<- with(lb_all.bursi,
+                               data.frame(yearly.dd.accum = 700,
+                                          TRAPS=5, 
+                                          year=2006, #select year when this species is most abundant- 2006
+                                          weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                          max.temp=32, #species maxes near 32
+                                          min.temp=18, #species maxes near 18
+                                          SPID="BURSI", 
+                                          HABITAT="ES")) #species likes ES best
+
+#make predictions
+predict.precip.bursi<-predict(gam_lb.bursi, newData.bursi.precip, type="link")
+predict.precip.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.precip, type="link")
+
+precip.bursi.der<-as.data.frame(cbind(newData.bursi.precip$max.temp, predict.precip.bursi, predict.precip.bursi.1))
+precip.bursi.der$slope<-(precip.bursi.der$predict.precip.bursi.1-precip.bursi.der$predict.precip.bursi)/1
+
+#significant factor but no peak in range of data- slight increase at low and high values
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.bursi.habitat<- with(lb_all.bursi,
+                             data.frame(yearly.dd.accum = 700,
+                                        TRAPS=5, 
+                                        year=2006, #select year when this species is most abundant- 2006
+                                        weekly.precip=0, # species likes it dry
+                                        max.temp=32, #species maxes near 32
+                                        min.temp=18, #species maxes near 18
+                                        SPID="BURSI", 
+                                        HABITAT="ES")) #species likes ES best #just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.bursi, newData.bursi.habitat, type="link")
+
+
+#ES 0.84
+
 
