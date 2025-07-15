@@ -607,7 +607,8 @@ lb_summary_maxrainfall
 library(reshape2)
 library(vegan)
 
-
+#let's visualize this!
+nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
 
 #create a matrix of observations by community
 #create parallel yearly and weekly analyses
@@ -635,16 +636,16 @@ ord.year
 
 plot(ord.year, disp='sites', type='n')
 #maybe display the most common as ellipses and less common as points?
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="orange", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="red", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="pink", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow4", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="yellow", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="blue", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="purple", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="coral", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="palegreen", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
-ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col="violet", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[1], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[2], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[3], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[4], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[5], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[6], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[7], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[8], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[9], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
+ordiellipse(ord.year, landscape.year.1$SPID, draw="polygon", col=nativepal[10], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
 
 #points(ord.year, display="sites", select=which(landscape.year.1$SPID=="ABIPN"), pch=15, col="orange")
 #points(ord.year, display="sites", select=which(landscape.year.1$SPID=="C7"), pch=19, col="red")
@@ -688,16 +689,16 @@ ord.week
 
 plot(ord.week, disp='sites', type='n')
 #match up formatting to above
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="orange", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="red", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="pink", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="yellow4", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="yellow", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="blue", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="purple", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="coral", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="palegreen", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col="violet", kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[1], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[2], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[3], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[4], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[5], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[6], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[7], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[8], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[9], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[10], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
 
 ordilabel(ord.week, display="species", cex=0.75, col="black")
 
@@ -713,7 +714,7 @@ specmod
 #we're using the P value and R square, and paying attention to which variables seem too colinear to include
 
 fit.week<-envfit(ord.week~year+
-                   yearly.precip.accum+yearly.dd.accum,
+                   weekly.precip+max.temp+min.temp+yearly.dd.accum,
                  data=weekly.context, perm=999)
 summary(fit.week)
 fit.week
@@ -879,8 +880,6 @@ summary(gam_lb.abipn)
 # #looks fine, sweet!
 # gam.check(gam_lb)
 
-#let's visualize this!
-nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
 
 withinyear.dd.abipn<-visreg(gam_lb.abipn, "yearly.dd.accum", partial=F, rug=FALSE, 
                       overlay=T, scale="response", gg=TRUE,
@@ -1132,8 +1131,7 @@ summary(gam_lb.bursi)
 # #looks fine, sweet!
 # gam.check(gam_lb)
 
-#let's visualize this!
-nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
+
 
 withinyear.dd.bursi<-visreg(gam_lb.bursi, "yearly.dd.accum", partial=F, rug=FALSE, 
                             overlay=T, scale="response", gg=TRUE,
