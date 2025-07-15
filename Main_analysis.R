@@ -862,8 +862,9 @@ round(cor(lb_all[10:19], method="pearson"), digits=2)
 lb_all.abipn<-lb_all[which(lb_all$SPID=="ABIPN"),]
 
 gam_lb.abipn<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
-              s(max.rainfall, sp=1)+
+              s(weekly.precip, sp=1)+
               s(max.temp, sp=1)+
+              s(min.temp, sp=1)+ 
               HABITAT+
               s(year, sp=1)+
               offset(log(TRAPS)), method="REML", data=lb_all.abipn, family="quasipoisson")
@@ -886,10 +887,10 @@ withinyear.dd.abipn<-visreg(gam_lb.abipn, "yearly.dd.accum", partial=F, rug=FALS
 
 withinyear.dd.abipn
 
-withinyear.rain.abipn<-visreg(gam_lb.abipn, "max.rainfall",  partial=F, rug=FALSE, 
+withinyear.rain.abipn<-visreg(gam_lb.abipn, "weekly.precip",  partial=F, rug=FALSE, 
                               overlay=T, scale="response", gg=TRUE,
                               line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
-  labs(x="Maximum daily rainfall within week (mm)", y="")+
+  labs(x="Total precip within week (mm)", y="")+
   theme_classic()+ theme(legend.position = "none")
 
 withinyear.rain.abipn
@@ -898,10 +899,19 @@ withinyear.temp.abipn<-visreg(gam_lb.abipn, "max.temp",  partial=F, rug=FALSE,
                         overlay=T, scale="response", gg=TRUE,
                         line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Maximum temperature within week (C)", y="")+
-  theme_classic()+ theme(legend.position = "none")
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
 withinyear.temp.abipn
 
+withinyear.mintemp.abipn<-visreg(gam_lb.abipn, "min.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
 
+withinyear.mintemp.abipn
 
 withinyear.habitat.abipn<-visreg(gam_lb.abipn, "HABITAT",  partial=F, rug=FALSE, 
                            overlay=T, scale="response", gg=TRUE,
@@ -915,14 +925,16 @@ withinyear.yearly.abipn<-visreg(gam_lb.abipn, "year",   partial=F, rug=FALSE,
                           overlay=T, scale="response", gg=TRUE,
                           line=list(lty=1, col=nativepal[1]), fill=list(fill=nativepal[1], alpha=0.4))+
   labs(x="Year", y="")+
-  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
 
 withinyear.yearly.abipn
 
 #plot the withinyear model all together:
 
-withinyear.modelplot.abipn<-plot_grid(withinyear.yearly.abipn,withinyear.dd.abipn, withinyear.rain.abipn, withinyear.temp.abipn, withinyear.habitat.abipn,  
-                              ncol=1, rel_heights = c(1, 1, 1, 1, 2), labels=c('A', 'B', 'C', 'D', 'E'), align="v")
+withinyear.modelplot.abipn<-plot_grid(withinyear.yearly.abipn,withinyear.dd.abipn,  withinyear.mintemp.abipn, withinyear.temp.abipn, withinyear.rain.abipn, withinyear.habitat.abipn,  
+                              ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
 withinyear.modelplot.abipn
 
 #create overall y axis label
@@ -930,14 +942,13 @@ partresid<-text_grob(paste("        Partial residual captures"), color="black", 
 
 
 #now replot with grob label
-withinyear.plot<-plot_grid(partresid, withinyear.modelplot, ncol=2, rel_widths = c(1,11))
+withinyear.plot.abipn<-plot_grid(partresid, withinyear.modelplot.abipn, ncol=2, rel_widths = c(1,11))
 
-withinyear.plot
+withinyear.plot.abipn
 
-pdf("plots/figurewithinyeargam.pdf", height=5, width=10)
-withinyear.plot
+pdf("plots/figurewithinyeargamabipn.pdf", height=5, width=10)
+withinyear.plot.abipn
 dev.off()
-
 
 
 #we'll want to extract the data associated with activity peaks
@@ -945,290 +956,155 @@ dev.off()
 #ok, I think we found the method we should use! here's the tutorial:
 # https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
 
-#first we create a new dataframe that we can use our model to predict the values for
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
 
-#create data for C7, holding everything constant but degree days
-newData.C7 <- with(lb_all,
-                  data.frame(yearly.dd.accum = seq(0, 1500, length = 300),
+#create data for abipn, holding everything constant but degree days
+newData.abipn.dd <- with(lb_all.abipn,
+                  data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
                              TRAPS=5, 
-                             year=mean(year), 
-                             max.rainfall=mean(max.rainfall), 
-                             max.temp=mean(max.temp), 
-                             SPID="C7", 
-                             HABITAT="alfalfa"))
+                             year=1990, #select year when this species is most abundant- 1990
+                             weekly.precip=0, # species likes it dry
+                             max.temp=26, #species maxes near 26
+                             min.temp=12, #species maxes near 12
+                             SPID="ABIPN", 
+                             HABITAT="coniferous")) #species likes conifers best
 
 #make the same frame but for 1 more degday
-newData.C7.1<- with(lb_all,
-                     data.frame(yearly.dd.accum = seq(1, 1501, length = 300),
+newData.abipin.1.dd<- with(lb_all.abipn,
+                     data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
                                 TRAPS=5, 
-                                year=mean(year), 
-                                max.rainfall=mean(max.rainfall),
-                                max.temp=mean(max.temp), 
-                                SPID="C7", 
-                                HABITAT="alfalfa"))
+                                year=1990, #select year when this species is most abundant- 1990
+                                weekly.precip=0, # species likes it dry
+                                max.temp=26, #species maxes near 26
+                                min.temp=12, #species maxes near 12
+                                SPID="ABIPN", 
+                                HABITAT="coniferous")) #species likes conifers best
 
 #make predictions
-predict.dd.C7<-predict(gam_lb, newData.C7, type="link")
-predict.dd.C7.1<-predict(gam_lb, newData.C7.1, type="link")
+predict.dd.abipn<-predict(gam_lb.abipn, newData.abipn.dd, type="link")
+predict.dd.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.dd, type="link")
 
-dd.C7.der<-as.data.frame(cbind(newData.C7$yearly.dd.accum, predict.dd.C7, predict.dd.C7.1))
-dd.C7.der$slope<-(dd.C7.der$predict.dd.C7.1-dd.C7.der$predict.dd.C7)/1
+dd.abipn.der<-as.data.frame(cbind(newData.abipn.dd$yearly.dd.accum, predict.dd.abipn, predict.dd.abipn.1))
+dd.abipn.der$slope<-(dd.abipn.der$predict.dd.abipn.1-dd.abipn.der$predict.dd.abipn)/1
 
-#then let's do the same thing with harmonia
+#slope approaches zero at 356 and 1118 degree days (we look for places where the slope changes from negative to positive or vice versa)- 
+#note dd is not significant in the model but data suggests two adult activity peaks- 2 generations per year
 
-newData.HAXY <- with(lb_all,
-                   data.frame(yearly.dd.accum = seq(0, 1500, length = 300),
-                              TRAPS=5, 
-                              year=mean(year), 
-                              max.rainfall=mean(max.rainfall), 
-                              max.temp=mean(max.temp), 
-                              SPID="HAXY", 
-                              HABITAT="alfalfa"))
+#create data for abipn, holding everything constant but minimum temperature
+newData.abipn.mint <- with(lb_all.abipn,
+                         data.frame(yearly.dd.accum = 1118,
+                                    TRAPS=5, 
+                                    year=1990, #select year when this species is most abundant- 1990
+                                    weekly.precip=0, # species likes it dry
+                                    max.temp=26, #species maxes near 26
+                                    min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                    SPID="ABIPN", 
+                                    HABITAT="coniferous")) #species likes conifers best
 
-#make the same frame but for 1 more degday
-newData.HAXY.1<- with(lb_all,
-                    data.frame(yearly.dd.accum = seq(1, 1501, length = 300),
-                               TRAPS=5, 
-                               year=mean(year), 
-                               max.rainfall=mean(max.rainfall),
-                               max.temp=mean(max.temp), 
-                               SPID="HAXY", 
-                               HABITAT="alfalfa"))
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.mint<- with(lb_all.abipn,
+                           data.frame(yearly.dd.accum = 1118,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=26, #species maxes near 26
+                                      min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                      SPID="ABIPN", 
+                                      HABITAT="coniferous")) #species likes conifers best
 
 #make predictions
-predict.dd.HAXY<-predict(gam_lb, newData.HAXY, type="link")
-predict.dd.HAXY.1<-predict(gam_lb, newData.HAXY.1, type="link")
-
-dd.HAXY.der<-as.data.frame(cbind(newData.HAXY$yearly.dd.accum, predict.dd.HAXY, predict.dd.HAXY.1))
-dd.HAXY.der$slope<-(dd.HAXY.der$predict.dd.HAXY.1-dd.HAXY.der$predict.dd.HAXY)/1
-
-#ok, now let's predict the mean captures for each habitat. Let's do this at the C7 activity peak
-
-newData.C7.habitat<- with(lb_all,
-                          data.frame(yearly.dd.accum = 1250,
-                                                TRAPS=5, 
-                                                year=mean(year), 
-                                                max.rainfall=mean(max.rainfall), 
-                                                max.temp=mean(max.temp), 
-                                                SPID="C7", 
-                                                HABITAT="ES"))
-predict(gam_lb, newData.C7.habitat, type="link")
-
-
-
-#soybean 1.74
-#wheat 1.93
-#alfalfa 1.76
-#ES 1.31
-#poplar
-
-
-
-newData.HAXY.habitat<- with(lb_all,
-                          data.frame(yearly.dd.accum = 1250,
-                                     TRAPS=5, 
-                                     year=mean(year), 
-                                     max.rainfall=mean(max.rainfall), 
-                                     max.temp=mean(max.temp), 
-                                     SPID="HAXY", 
-                                     HABITAT="poplar"))
-predict(gam_lb, newData.HAXY.habitat, type="link")
-
-#alfalfa 0.65
-#es 0.49
-# Poplar
-
-
-#now, what accounts for the year to-year variation in absolute numbers of both species? 
-#let's do another gam, but with the yearly aggregated data and the summary weather metrics
-lb_yearly<-rename(lb_yearly, year=Year)
-#also because we're looking for drivers, let's re-arrange the data so one beetle can
-#be considered as a driver for the other
-lb_yearly_1<-dcast(lb_yearly, year+REPLICATE+TREAT+HABITAT~SPID,
-                                   value.var ="SumOfADULTS",  sum)
-
-lb_yearly_2<-merge(lb_yearly_1,unique(lb_yearly[,c(1:4,7)]), all.x=T)
-
-lb_yearly_weather<-merge(lb_yearly_2, weather_yearly, all.x=T)
-
-
-
-#another gam using this data aggregated by year but not by rep, and because the
-#species seem to be responding to different factors, let's do one at a time. Because autocorrelation, let's do
-#a forward selection
-
-#first let's find out what's super-correlated
-
-target_data<-lb_yearly_weather[,c(8,12:15,19:21)]
-
-cor(target_data, method = "pearson")
-#let's flag things that are >abs(0.3)
-
-
-#model selection criteria- add params one by one by highest F value.
-#in subsequent steps, eliminate params with >abs(0.3) Pearson correlation with any parameters in model
-#each time a parameter is added, check concurvity, if it exceeds 0.5 (observed) for any parameter, eliminate
-#that parameter from consideration
-
-
-gam_haxy_yearly<-gam(HAXY~#s(dd20, sp=1)+
-                     #s(dd25.dif, sp=1)+
-                     s(dd30.dif, sp=1)+
-                     #s(dd35.dif, sp=1)+
-                     s(precip20, sp=1)+
-                     #s(precip25.dif, sp=1)+
-                     #s(precip30.dif, sp=1)+
-                     s(precip35.dif, sp=1)+
-                       HABITAT+
-                     offset(log(TRAPS)), data=lb_yearly_weather, family="quasipoisson", method="REML")
-summary(gam_haxy_yearly)
-anova.gam(gam_haxy_yearly)
-
-#because the model has a lot of variables that are probably a bit autocorrelated,
-#check concurvity to see if it needs simplification- aim to get observed <0.5 for all pairwise comparisons of variables
-
-
-concurvity(gam_haxy_yearly)
-
-gam.check(gam_haxy_yearly)
-
-#for plotting purposes, let's also pull the average value of each weather measurement
-
-avg.dd20<-mean(weather_yearly$dd20)
-avg.dd25<-mean(weather_yearly$dd25.dif)
-avg.dd30<-mean(weather_yearly$dd30.dif)
-avg.dd35<-mean(weather_yearly$dd35.dif)
-avg.precip20<-mean(weather_yearly$precip20)
-avg.precip25<-mean(weather_yearly$precip25.dif)
-avg.precip30<-mean(weather_yearly$precip30.dif)
-avg.precip35<-mean(weather_yearly$precip35.dif)
-
-avg.haxy<-mean(lb_yearly_weather$HAXY)
-avg.c7<-mean(lb_yearly_weather$C7)
-
-
-
-haxy.dd30<-visreg(gam_haxy_yearly, "dd30.dif", partial=F, rug=FALSE, 
-                  overlay=TRUE,scale="response", gg=T, ylab="", 
-                  xlab=NULL, line=list(col="darkorange", lty=1),
-                  fill=list(fill="darkorange", alpha=0.4))+
-  coord_cartesian(ylim=c(0, 35))+
-  theme_classic()+
-  geom_vline(xintercept=avg.dd30, linetype="dashed", color="blue", size=1)
-haxy.dd30
-
-
-
-
-haxy.precip20<-visreg(gam_haxy_yearly, "precip20", partial=F, rug=FALSE, 
-                      overlay=TRUE,scale="response", gg=T, ylab="", 
-                      xlab=NULL, line=list(col="darkorange", lty=1),
-                      fill=list(fill="darkorange", alpha=0.4))+
-  coord_cartesian(ylim=c(0, 35))+
-  theme_classic()+
-  geom_vline(xintercept=avg.precip20, linetype="dashed", color="blue", size=1)
-haxy.precip20
-
-
-haxy.precip35<-visreg(gam_haxy_yearly, "precip35.dif", partial=F, rug=FALSE, 
-                      overlay=TRUE,scale="response", gg=T, ylab="", 
-                      xlab=NULL, line=list(col="darkorange", lty=1),
-                      fill=list(fill="darkorange", alpha=0.4))+
-  coord_cartesian(ylim=c(0, 35))+
-  theme_classic()+
-  geom_vline(xintercept=avg.precip35, linetype="dashed", color="blue", size=1)
-haxy.precip35
-
-
-##### now C7
-
-gam_c7_yearly<-gam(C7~ #s(dd20, sp=1)+
-                       s(dd25.dif, sp=1)+
-                       #s(dd30.dif, sp=1)+
-                       s(dd35.dif, sp=1)+
-                       #s(precip20, sp=1)+ 
-                       #s(precip25.dif, sp=1)+
-                       s(precip30.dif, sp=1)+
-                       #s(precip35.dif, sp=1)+
-                     HABITAT+
-                       offset(log(TRAPS)), data=lb_yearly_weather, family="quasipoisson", method="REML")
-summary(gam_c7_yearly)
-
-anova.gam(gam_c7_yearly)
-#because the model has a lot of variables that are probably a bit autocorrelated,
-#check concurvity to see if it needs simplification- aim to get observed <0.5 for all values
-
-
-concurvity(gam_c7_yearly)
-
-gam.check(gam_c7_yearly)
-
-
-
-
-
-C7.dd25<-visreg(gam_c7_yearly, "dd25.dif", partial=F, rug=FALSE,
-                overlay=TRUE,scale="response",gg=T, ylab="",
-                xlab=NULL,line=list(col="darkred", lty=1),
-                fill=list(fill=rgb(209,153,153, maxColorValue = 255)))+
-  coord_cartesian(ylim=c(0, 130))+
-  theme_classic()+
-  geom_vline(xintercept=avg.dd25, linetype="dashed", color="blue", size=1)
-
-C7.dd25
-
-
-C7.dd35<-visreg(gam_c7_yearly, "dd35.dif", partial=F, rug=FALSE,
-                overlay=TRUE,scale="response",gg=T, ylab="",
-                xlab=NULL,line=list(col="darkred", lty=1),
-                fill=list(fill=rgb(209,153,153, maxColorValue = 255)))+
-  coord_cartesian(ylim=c(0, 130), xlim=c(310, 460))+
-  theme_classic()+
-  geom_vline(xintercept=avg.dd35, linetype="dashed", color="blue", size=1)
-
-C7.dd35
-
-
-C7.precip30<-visreg(gam_c7_yearly, "precip30.dif", partial=F, rug=FALSE,
-                    overlay=TRUE,scale="response", gg=T, ylab="",
-                    xlab=NULL,line=list(col="darkred", lty=1),
-                    fill=list(fill=rgb(209,153,153, maxColorValue = 255)))+
-  coord_cartesian(ylim=c(0, 130))+
-  theme_classic()+
-  geom_vline(xintercept=avg.precip30, linetype="dashed", color="blue", size=1)
-
-C7.precip30
-
-
-
-blankspace<-text_grob(paste(""), color="black")
-harmonia<-text_grob(paste("Harmonia axyridis"), color="black", face="italic", size=13)
-coccinella<-text_grob(paste("Coccinella septempunctata"), color="black", face="italic", size=13)
-Competitor<-text_grob(paste("Captures of\ncompetitor"), color="black", size=11)
-dd20<-text_grob(paste("Degree days\n  at 20 weeks"), color="black", size=11)
-dd25L<-text_grob(paste("Degree days\n  at 25 weeks"), color="black", size=11)
-dd25<-text_grob(paste("\n  at 25 weeks"), color="black", size=11)
-dd30<-text_grob(paste("\n  at 30 weeks"), color="black", size=11)
-dd35<-text_grob(paste("\n  at 35 weeks"), color="black", size=11)
-precip20<-text_grob(paste("Precipitation\nat 20 weeks"), color="black", size=11)
-
-
-#create a giant flippin' plot with all the panels
-
-between_years<-plot_grid(blankspace, harmonia, coccinella,
-                         dd25L, blankspace, C7.dd25,
-                         dd30, haxy.dd30, blankspace,
-                         dd35, blankspace, C7.dd35, 
-                         precip20, haxy.precip20, blankspace,
-                         dd30, blankspace, C7.precip30,
-                         dd35, haxy.precip35, blankspace, 
-                         ncol=3, rel_widths=c(1,4,4),rel_heights = c(0.3,1,1,1,1,1,1,1), align="v", axis="l")
-
-between_years
-
-pdf("plots/figurebetweenyeargam.pdf", height=8, width=8)
-between_years
-dev.off()
-
-
+predict.mint.abipn<-predict(gam_lb.abipn, newData.abipn.mint, type="link")
+predict.mint.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.mint, type="link")
+
+mint.abipn.der<-as.data.frame(cbind(newData.abipn.mint$min.temp, predict.mint.abipn, predict.mint.abipn.1))
+mint.abipn.der$slope<-(mint.abipn.der$predict.mint.abipn.1-mint.abipn.der$predict.mint.abipn)/1
+
+
+#slope approaches zero at minimum temperature of 10.5 C
+#significant factor in the model
+
+
+#create data for abipn, holding everything constant but maximum temperature
+newData.abipn.maxt <- with(lb_all.abipn,
+                           data.frame(yearly.dd.accum = 1118,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp= 12, #species maxes near 12
+                                      SPID="ABIPN", 
+                                      HABITAT="coniferous")) #species likes conifers best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.maxt<- with(lb_all.abipn,
+                             data.frame(yearly.dd.accum = 1118,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=0, # species likes it dry
+                                        max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                        min.temp= 12, #species maxes near 12
+                                        SPID="ABIPN", 
+                                        HABITAT="coniferous")) #species likes conifers best
+
+#make predictions
+predict.maxt.abipn<-predict(gam_lb.abipn, newData.abipn.maxt, type="link")
+predict.maxt.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.maxt, type="link")
+
+maxt.abipn.der<-as.data.frame(cbind(newData.abipn.maxt$max.temp, predict.maxt.abipn, predict.maxt.abipn.1))
+maxt.abipn.der$slope<-(maxt.abipn.der$predict.maxt.abipn.1-maxt.abipn.der$predict.maxt.abipn)/1
+
+
+#slope approaches zero at minimum temperature of 26.2 C
+#significant factor in the model
+
+
+#create data for abipn, holding everything constant but precipitation
+newData.abipn.precip <- with(lb_all.abipn,
+                           data.frame(yearly.dd.accum = 1118,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                      max.temp=26, #species maxes near 26
+                                      min.temp= 12, #species maxes near 12
+                                      SPID="ABIPN", 
+                                      HABITAT="coniferous")) #species likes conifers best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.abipin.1.precip<- with(lb_all.abipn,
+                             data.frame(yearly.dd.accum = 1118,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                        max.temp=26, #species maxes near 26
+                                        min.temp= 12, #species maxes near 12
+                                        SPID="ABIPN", 
+                                        HABITAT="coniferous")) #species likes conifers best
+
+#make predictions
+predict.precip.abipn<-predict(gam_lb.abipn, newData.abipn.precip, type="link")
+predict.precip.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.precip, type="link")
+
+precip.abipn.der<-as.data.frame(cbind(newData.abipn.precip$max.temp, predict.precip.abipn, predict.precip.abipn.1))
+precip.abipn.der$slope<-(precip.abipn.der$predict.precip.abipn.1-precip.abipn.der$predict.precip.abipn)/1
+
+#this species peaks at zero- no rain
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.abipn.habitat<- with(lb_all.abipn,
+                               data.frame(yearly.dd.accum = 1118,
+                                          TRAPS=5, 
+                                          year=1990, #select year when this species is most abundant- 1990
+                                          weekly.precip=0, # species likes it dry
+                                          max.temp=26, #species maxes near 26
+                                          min.temp= 12, #species maxes near 12
+                                          SPID="ABIPN", 
+                                          HABITAT=c("poplar", "coniferous")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.abipn, newData.abipn.habitat, type="link")
+
+
+#poplar 0.57, coniferous 0.67
 
