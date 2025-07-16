@@ -55,10 +55,10 @@ library(dplyr)
 
 #filter the data for only LB species
 
-lb_list<-c("ABIPN", "BURSI", "C7", "CMAC", "CSTIG","CTRIF", "CYCSP", "H13", "HAXY", "HCONV","HGLAC", 
-           "HPARN", "HVAR", "PQUA")
-
-LB<-LB[which(LB$SPID %in% lb_list),] 
+# lb_list<-c("ABIPN", "BURSI", "C7", "CMAC", "CSTIG","CTRIF", "CYCSP", "H13", "HAXY", "HCONV","HGLAC", 
+#            "HPARN", "HVAR", "PQUA")
+# 
+# LB<-LB[which(LB$SPID %in% lb_list),] 
 
 lb_rep<-aggregate(data=LB, SumOfADULTS~ Year+week+TREAT+HABITAT+REPLICATE+SPID, FUN=sum)
 lb_rep_N<-aggregate(data=LB, SumOfADULTS~ Year+week+TREAT+HABITAT+REPLICATE+SPID, FUN=length)
@@ -200,7 +200,7 @@ plot(weather$DOY, weather$precipitation)
 
 #let's cut out the data from before 1989 so we can process the weather data more quickly. Al so we'll cut off the weather
 #data that's causing us problems- we don't need it anyway
-weather<-subset(weather, weather$year>=1989& weather$year<=2024)
+weather<-subset(weather, weather$year>=1989& weather$year<=2025)
 
 
 #lets also get rid of the variables we don't need:
@@ -213,6 +213,7 @@ weather$flag_air_temp_min<-NULL
 #stuff in ascending order, so let's sort the data by year and DOY
 
 weather<-weather[order(weather$year, weather$DOY),]
+weather<-weather[1:13316,]
 
 #Let's examine the data to see how complete it is
 summary(weather)
@@ -342,13 +343,13 @@ allen<-function(maxi, mini, thresh){
 
 #do some checks to make sure the function is working properly
 
-weather$dd<-allen(weather$temp_max_cleaned, weather$temp_min_cleaned, 10)
-
+dd<-allen(c(weather$temp_max_cleaned, 0), c(weather$temp_min_cleaned, 0), 10)
+weather$dd<-head(dd, -1)
 
 
 #plot to make sure nothing weird is happening- look for more degree days midyear,
 #and NO negative values. Looks like we're WINNING!
-plot(weather$DOY, weather$dd)
+plot(weather$DOY, weather$dd, col=ifelse(weather$year==2025, "red", "black"))
 
 #now write a new function to calculate accumulated degree days
 
@@ -384,9 +385,9 @@ accum.allen<-function(maxi, mini, thresh, DOY, startday){
 
 #same sort of checks. Run the function for our data
 start<-1
-weather$dd.accum<-accum.allen(weather$temp_max_cleaned, weather$temp_min_cleaned, 10, weather$DOY, start)
+weather$dd.accum<-head(accum.allen(c(weather$temp_max_cleaned,0), c(weather$temp_min_cleaned, 0), 10, c(weather$DOY, 0), start), -1)
 #and plot that thing to look for problems:
-plot(weather$DOY, weather$dd.accum)
+plot(weather$DOY, weather$dd.accum, col=ifelse(weather$year==2025, "red", "black"))
 #looks good! victory!!!
 
 #we have good reason to think precipitation may also be important for ladybeetles
@@ -468,7 +469,7 @@ accum.precip.time<-function(precip, DOY, startday){
 
 weather$prec.accum.0<-accum.precip.time(weather$precipitation, weather$DOY, start)
 #and plot that thing to look for problems:
-plot(weather$DOY, weather$prec.accum.0)
+plot(weather$DOY, weather$prec.accum.0, col=ifelse(weather$year==2025, "red", "black"))
 
 #now let's put together a weekly 'weather report'
 
@@ -616,13 +617,14 @@ landscape.year<-dcast(lb_all, year+REPLICATE+SPID~HABITAT,
 
 landscape.week<-dcast(lb_all, year+week+SPID~HABITAT,
                       value.var ="SumOfADULTS",  sum)
-#because we have some rep by week combinations with zero observations, we must remove them prior to analysis
+#because we have some rep by week/year combinations with zero observations, we must remove them prior to analysis
+landscape.year.1<-landscape.year[rowSums(landscape.year[4:12])>2,]
 landscape.week.1<-landscape.week[rowSums(landscape.week[4:12])>2,]
 
 #strip out the context- yes I know! this seems counter-intuitive and awful
 #but vegan (and most community analysis packages) want your response variable as its own object
 
-com.matrix.year<-landscape.year[,4:12]
+com.matrix.year<-landscape.year.1[,4:12]
 com.matrix.week<-landscape.week.1[,4:12]
 
 #set up ordination with year data
@@ -631,8 +633,10 @@ ord.year<-metaMDS(com.matrix.year, autotransform=TRUE)
 ord.year
 
 plot(ord.year, disp='sites', type='n')
-points(ord.year, display="sites", select=which(landscape.year$SPID=="HAXY"), pch=15, col="orange")
-points(ord.year, display="sites", select=which(landscape.year$SPID=="C7"), pch=19, col="red")
+points(ord.year, display="sites", select=which(landscape.year.1$SPID=="HAXY"), pch=15, col="orange")
+points(ord.year, display="sites", select=which(landscape.year.1$SPID=="C7"), pch=19, col="red")
+points(ord.year, display="sites", select=which(landscape.year.1$SPID=="CMAC"), pch=16, col="pink")
+points(ord.year, display="sites", select=which(landscape.year.1$SPID=="PQUA"), pch=16, col="blue")
 ordilabel(ord.year, display="species", cex=0.75, col="black")
 
 #bring the relevant environmental data back into our enviromental frame
