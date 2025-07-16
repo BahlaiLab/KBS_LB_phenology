@@ -1617,4 +1617,4 @@ newData.cmac.habitat<- with(lb_all.cmac,
 predict(gam_lb.cmac, newData.cmac.habitat, type="link")
 
 
-#poplar 0.57, coniferous 0.67
+#maize max at 3.2
