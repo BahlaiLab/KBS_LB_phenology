@@ -632,7 +632,7 @@ com.matrix.week<-landscape.week.1[,4:12]
 ord.year<-metaMDS(com.matrix.year, autotransform=TRUE)
 ord.year
 
-#we will only plot the 7 most common species (captures >1000)
+
 
 plot(ord.year, disp='sites', type='n')
 #maybe display the most common as ellipses and less common as points?
@@ -1618,3 +1618,263 @@ predict(gam_lb.cmac, newData.cmac.habitat, type="link")
 
 
 #maize max at 3.2
+
+##################### cstig 
+
+lb_all.cstig<-lb_all[which(lb_all$SPID=="CSTIG"),]
+
+gam_lb.cstig<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                    s(weekly.precip, sp=1)+
+                    s(max.temp, sp=1)+
+                    s(min.temp, sp=1)+ 
+                    HABITAT+
+                    s(year, sp=1)+
+                    offset(log(TRAPS)), method="REML", data=lb_all.cstig, family="quasipoisson")
+summary(gam_lb.cstig)
+anova(gam_lb.cstig) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.cstig<-visreg(gam_lb.cstig, "yearly.dd.accum", partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.cstig
+
+withinyear.rain.cstig<-visreg(gam_lb.cstig, "weekly.precip",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.cstig
+
+withinyear.temp.cstig<-visreg(gam_lb.cstig, "max.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.cstig
+
+withinyear.mintemp.cstig<-visreg(gam_lb.cstig, "min.temp",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.cstig
+
+withinyear.habitat.cstig<-visreg(gam_lb.cstig, "HABITAT",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.cstig
+
+withinyear.yearly.cstig<-visreg(gam_lb.cstig, "year",   partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.cstig
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.cstig<-plot_grid(withinyear.yearly.cstig,withinyear.dd.cstig,  withinyear.mintemp.cstig, withinyear.temp.cstig, withinyear.rain.cstig, withinyear.habitat.cstig,  
+                                      ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.cstig
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.cstig<-plot_grid(partresid, withinyear.modelplot.cstig, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.cstig
+
+pdf("plots/figurewithinyeargamcstig.pdf", height=10, width=5)
+withinyear.plot.cstig
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for cstig, holding everything constant but degree days
+#from plot, cstig likes 1992, 200dd, 9min, 24 max, 30 precip, deciduous- multiple maxima but chose ones closest to 'normal' range
+newData.cstig.dd <- with(lb_all.cstig,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=1992, #select year when this species is most abundant- 1990
+                                    weekly.precip=30, # species likes it dry
+                                    max.temp=24, #species maxes near 24
+                                    min.temp=9, #species maxes near 17
+                                    SPID="CSTIG", 
+                                    HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 1 more degday
+newData.cstig.1.dd<- with(lb_all.cstig,
+                          data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                     TRAPS=5, 
+                                     year=1992, #select year when this species is most abundant- 1990
+                                     weekly.precip=30, # species likes it dry
+                                     max.temp=24, #species maxes near 24
+                                     min.temp=9, #species maxes near 17
+                                     SPID="CSTIG", 
+                                     HABITAT="deciduous")) #species likes deciduous best
+
+#make predictions
+predict.dd.cstig<-predict(gam_lb.cstig, newData.cstig.dd, type="link")
+predict.dd.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.dd, type="link")
+
+dd.cstig.der<-as.data.frame(cbind(newData.cstig.dd$yearly.dd.accum, predict.dd.cstig, predict.dd.cstig.1))
+dd.cstig.der$slope<-(dd.cstig.der$predict.dd.cstig.1-dd.cstig.der$predict.dd.cstig)/1
+
+#slope  is largely negative from early in the season suggesting activity peak is earlier than monitoring starts- and one generation per year
+
+
+#### start here!!!
+#create data for cstig, holding everything constant but minimum temperature
+#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+newData.cstig.mint <- with(lb_all.cstig,
+                           data.frame(yearly.dd.accum = 1100,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=28, #species maxes near 28
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="CSTIG", 
+                                      HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.mint<- with(lb_all.cstig,
+                            data.frame(yearly.dd.accum = 1100,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1990
+                                       weekly.precip=0, # species likes it dry
+                                       max.temp=28, #species maxes near 28
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="CSTIG", 
+                                       HABITAT="maize")) #species likes maize best
+
+#make predictions
+predict.mint.cstig<-predict(gam_lb.cstig, newData.cstig.mint, type="link")
+predict.mint.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.mint, type="link")
+
+mint.cstig.der<-as.data.frame(cbind(newData.cstig.mint$min.temp, predict.mint.cstig, predict.mint.cstig.1))
+mint.cstig.der$slope<-(mint.cstig.der$predict.mint.cstig.1-mint.cstig.der$predict.mint.cstig)/1
+
+
+#slope approaches zero at minimum temperature of 10.5 C
+#significant factor in the model
+
+
+#create data for cstig, holding everything constant but maximum temperature
+#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+
+newData.cstig.maxt <- with(lb_all.cstig,
+                           data.frame(yearly.dd.accum = 1100,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp= 17, #species maxes near 17
+                                      SPID="CSTIG", 
+                                      HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.maxt<- with(lb_all.cstig,
+                            data.frame(yearly.dd.accum = 1100,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1990
+                                       weekly.precip=0, # species likes it dry
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp= 17, #species maxes near 17
+                                       SPID="CSTIG", 
+                                       HABITAT="maize")) #species likes maize best
+
+
+#make predictions
+predict.maxt.cstig<-predict(gam_lb.cstig, newData.cstig.maxt, type="link")
+predict.maxt.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.maxt, type="link")
+
+maxt.cstig.der<-as.data.frame(cbind(newData.cstig.maxt$max.temp, predict.maxt.cstig, predict.maxt.cstig.1))
+maxt.cstig.der$slope<-(maxt.cstig.der$predict.maxt.cstig.1-maxt.cstig.der$predict.maxt.cstig)/1
+
+
+#slope approaches zero at max temperature of 28.1, 36.5 C
+#significant factor in the model
+
+
+#create data for cstig, holding everything constant but precipitation
+#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+newData.cstig.precip <- with(lb_all.cstig,
+                             data.frame(yearly.dd.accum = 1100,
+                                        TRAPS=5, 
+                                        year=1992, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=28, #species maxes near 28
+                                        min.temp= 17, #species maxes near 17
+                                        SPID="CSTIG", 
+                                        HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.precip<- with(lb_all.cstig,
+                              data.frame(yearly.dd.accum = 1100,
+                                         TRAPS=5, 
+                                         year=1992, #select year when this species is most abundant- 1990
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=28, #species maxes near 28
+                                         min.temp= 17, #species maxes near 17
+                                         SPID="CSTIG", 
+                                         HABITAT="maize")) #species likes maize best
+
+#make predictions
+predict.precip.cstig<-predict(gam_lb.cstig, newData.cstig.precip, type="link")
+predict.precip.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.precip, type="link")
+
+precip.cstig.der<-as.data.frame(cbind(newData.cstig.precip$weekly.precip, predict.precip.cstig, predict.precip.cstig.1))
+precip.cstig.der$slope<-(precip.cstig.der$predict.precip.cstig.1-precip.cstig.der$predict.precip.cstig)/1
+
+#this species peaks at zero- no rain
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.cstig.habitat<- with(lb_all.cstig,
+                             data.frame(yearly.dd.accum = 1100,
+                                        TRAPS=5, 
+                                        year=1992, #select year when this species is most abundant- 1990
+                                        weekly.precip=0, # species likes it dry
+                                        max.temp=28, #species maxes near 28
+                                        min.temp= 17, #species maxes near 17
+                                        SPID="CSTIG", 
+                                        HABITAT=c("maize")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.cstig, newData.cstig.habitat, type="link")
+
+
+#maize max at 3.2
+
+
+
