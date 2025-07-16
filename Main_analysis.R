@@ -873,6 +873,7 @@ gam_lb.abipn<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
               s(year, sp=1)+
               offset(log(TRAPS)), method="REML", data=lb_all.abipn, family="quasipoisson")
 summary(gam_lb.abipn)
+anova(gam_lb.abipn) #significance of parametric terms
 
 #not run- causes hangups in casual runs!
 # #check concurvity
@@ -1122,6 +1123,7 @@ gam_lb.bursi<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
                     s(year, sp=1)+
                     offset(log(TRAPS)), method="REML", data=lb_all.bursi, family="quasipoisson")
 summary(gam_lb.bursi)
+anova(gam_lb.bursi) #significance of parametric terms
 
 #everything but min temp significant here
 
