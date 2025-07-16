@@ -974,7 +974,7 @@ newData.abipn.dd <- with(lb_all.abipn,
                              HABITAT="coniferous")) #species likes conifers best
 
 #make the same frame but for 1 more degday
-newData.abipin.1.dd<- with(lb_all.abipn,
+newData.abipn.1.dd<- with(lb_all.abipn,
                      data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
                                 TRAPS=5, 
                                 year=1990, #select year when this species is most abundant- 1990
@@ -986,7 +986,7 @@ newData.abipin.1.dd<- with(lb_all.abipn,
 
 #make predictions
 predict.dd.abipn<-predict(gam_lb.abipn, newData.abipn.dd, type="link")
-predict.dd.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.dd, type="link")
+predict.dd.abipn.1<-predict(gam_lb.abipn, newData.abipn.1.dd, type="link")
 
 dd.abipn.der<-as.data.frame(cbind(newData.abipn.dd$yearly.dd.accum, predict.dd.abipn, predict.dd.abipn.1))
 dd.abipn.der$slope<-(dd.abipn.der$predict.dd.abipn.1-dd.abipn.der$predict.dd.abipn)/1
@@ -1006,7 +1006,7 @@ newData.abipn.mint <- with(lb_all.abipn,
                                     HABITAT="coniferous")) #species likes conifers best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.mint<- with(lb_all.abipn,
+newData.abipn.1.mint<- with(lb_all.abipn,
                            data.frame(yearly.dd.accum = 1118,
                                       TRAPS=5, 
                                       year=1990, #select year when this species is most abundant- 1990
@@ -1018,7 +1018,7 @@ newData.abipin.1.mint<- with(lb_all.abipn,
 
 #make predictions
 predict.mint.abipn<-predict(gam_lb.abipn, newData.abipn.mint, type="link")
-predict.mint.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.mint, type="link")
+predict.mint.abipn.1<-predict(gam_lb.abipn, newData.abipn.1.mint, type="link")
 
 mint.abipn.der<-as.data.frame(cbind(newData.abipn.mint$min.temp, predict.mint.abipn, predict.mint.abipn.1))
 mint.abipn.der$slope<-(mint.abipn.der$predict.mint.abipn.1-mint.abipn.der$predict.mint.abipn)/1
@@ -1040,7 +1040,7 @@ newData.abipn.maxt <- with(lb_all.abipn,
                                       HABITAT="coniferous")) #species likes conifers best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.maxt<- with(lb_all.abipn,
+newData.abipn.1.maxt<- with(lb_all.abipn,
                              data.frame(yearly.dd.accum = 1118,
                                         TRAPS=5, 
                                         year=1990, #select year when this species is most abundant- 1990
@@ -1052,7 +1052,7 @@ newData.abipin.1.maxt<- with(lb_all.abipn,
 
 #make predictions
 predict.maxt.abipn<-predict(gam_lb.abipn, newData.abipn.maxt, type="link")
-predict.maxt.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.maxt, type="link")
+predict.maxt.abipn.1<-predict(gam_lb.abipn, newData.abipn.1.maxt, type="link")
 
 maxt.abipn.der<-as.data.frame(cbind(newData.abipn.maxt$max.temp, predict.maxt.abipn, predict.maxt.abipn.1))
 maxt.abipn.der$slope<-(maxt.abipn.der$predict.maxt.abipn.1-maxt.abipn.der$predict.maxt.abipn)/1
@@ -1074,7 +1074,7 @@ newData.abipn.precip <- with(lb_all.abipn,
                                       HABITAT="coniferous")) #species likes conifers best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.precip<- with(lb_all.abipn,
+newData.abipn.1.precip<- with(lb_all.abipn,
                              data.frame(yearly.dd.accum = 1118,
                                         TRAPS=5, 
                                         year=1990, #select year when this species is most abundant- 1990
@@ -1086,9 +1086,9 @@ newData.abipin.1.precip<- with(lb_all.abipn,
 
 #make predictions
 predict.precip.abipn<-predict(gam_lb.abipn, newData.abipn.precip, type="link")
-predict.precip.abipn.1<-predict(gam_lb.abipn, newData.abipin.1.precip, type="link")
+predict.precip.abipn.1<-predict(gam_lb.abipn, newData.abipn.1.precip, type="link")
 
-precip.abipn.der<-as.data.frame(cbind(newData.abipn.precip$max.temp, predict.precip.abipn, predict.precip.abipn.1))
+precip.abipn.der<-as.data.frame(cbind(newData.abipn.precip$weekly.precip, predict.precip.abipn, predict.precip.abipn.1))
 precip.abipn.der$slope<-(precip.abipn.der$predict.precip.abipn.1-precip.abipn.der$predict.precip.abipn)/1
 
 #this species peaks at zero- no rain
@@ -1227,7 +1227,7 @@ newData.bursi.dd <- with(lb_all.bursi,
                                     HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 1 more degday
-newData.abipin.1.dd<- with(lb_all.bursi,
+newData.bursi.1.dd<- with(lb_all.bursi,
                            data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
                                       TRAPS=5, 
                                       year=2006, #select year when this species is most abundant- 2006
@@ -1239,7 +1239,7 @@ newData.abipin.1.dd<- with(lb_all.bursi,
 
 #make predictions
 predict.dd.bursi<-predict(gam_lb.bursi, newData.bursi.dd, type="link")
-predict.dd.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.dd, type="link")
+predict.dd.bursi.1<-predict(gam_lb.bursi, newData.bursi.1.dd, type="link")
 
 dd.bursi.der<-as.data.frame(cbind(newData.bursi.dd$yearly.dd.accum, predict.dd.bursi, predict.dd.bursi.1))
 dd.bursi.der$slope<-(dd.bursi.der$predict.dd.bursi.1-dd.bursi.der$predict.dd.bursi)/1
@@ -1259,7 +1259,7 @@ newData.bursi.mint <- with(lb_all.bursi,
                                       HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.mint<- with(lb_all.bursi,
+newData.bursi.1.mint<- with(lb_all.bursi,
                              data.frame(yearly.dd.accum = 700,
                                         TRAPS=5, 
                                         year=2006, #select year when this species is most abundant- 2006
@@ -1271,7 +1271,7 @@ newData.abipin.1.mint<- with(lb_all.bursi,
 
 #make predictions
 predict.mint.bursi<-predict(gam_lb.bursi, newData.bursi.mint, type="link")
-predict.mint.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.mint, type="link")
+predict.mint.bursi.1<-predict(gam_lb.bursi, newData.bursi.1.mint, type="link")
 
 mint.bursi.der<-as.data.frame(cbind(newData.bursi.mint$min.temp, predict.mint.bursi, predict.mint.bursi.1))
 mint.bursi.der$slope<-(mint.bursi.der$predict.mint.bursi.1-mint.bursi.der$predict.mint.bursi)/1
@@ -1292,7 +1292,7 @@ newData.bursi.maxt <- with(lb_all.bursi,
                                       HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.maxt<- with(lb_all.bursi,
+newData.bursi.1.maxt<- with(lb_all.bursi,
                              data.frame(yearly.dd.accum = 700,
                                         TRAPS=5, 
                                         year=2006, #select year when this species is most abundant- 2006
@@ -1304,7 +1304,7 @@ newData.abipin.1.maxt<- with(lb_all.bursi,
 
 #make predictions
 predict.maxt.bursi<-predict(gam_lb.bursi, newData.bursi.maxt, type="link")
-predict.maxt.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.maxt, type="link")
+predict.maxt.bursi.1<-predict(gam_lb.bursi, newData.bursi.1.maxt, type="link")
 
 maxt.bursi.der<-as.data.frame(cbind(newData.bursi.maxt$max.temp, predict.maxt.bursi, predict.maxt.bursi.1))
 maxt.bursi.der$slope<-(maxt.bursi.der$predict.maxt.bursi.1-maxt.bursi.der$predict.maxt.bursi)/1
@@ -1326,7 +1326,7 @@ newData.bursi.precip <- with(lb_all.bursi,
                                         HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.abipin.1.precip<- with(lb_all.bursi,
+newData.bursi.1.precip<- with(lb_all.bursi,
                                data.frame(yearly.dd.accum = 700,
                                           TRAPS=5, 
                                           year=2006, #select year when this species is most abundant- 2006
@@ -1338,9 +1338,9 @@ newData.abipin.1.precip<- with(lb_all.bursi,
 
 #make predictions
 predict.precip.bursi<-predict(gam_lb.bursi, newData.bursi.precip, type="link")
-predict.precip.bursi.1<-predict(gam_lb.bursi, newData.abipin.1.precip, type="link")
+predict.precip.bursi.1<-predict(gam_lb.bursi, newData.bursi.1.precip, type="link")
 
-precip.bursi.der<-as.data.frame(cbind(newData.bursi.precip$max.temp, predict.precip.bursi, predict.precip.bursi.1))
+precip.bursi.der<-as.data.frame(cbind(newData.bursi.precip$weekly.precip, predict.precip.bursi, predict.precip.bursi.1))
 precip.bursi.der$slope<-(precip.bursi.der$predict.precip.bursi.1-precip.bursi.der$predict.precip.bursi)/1
 
 #significant factor but no peak in range of data- slight increase at low and high values
@@ -1363,4 +1363,258 @@ predict(gam_lb.bursi, newData.bursi.habitat, type="link")
 
 #ES 0.84
 
+##################### cmac 
 
+lb_all.cmac<-lb_all[which(lb_all$SPID=="CMAC"),]
+
+gam_lb.cmac<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                   s(weekly.precip, sp=1)+
+                   s(max.temp, sp=1)+
+                   s(min.temp, sp=1)+ 
+                   HABITAT+
+                   s(year, sp=1)+
+                   offset(log(TRAPS)), method="REML", data=lb_all.cmac, family="quasipoisson")
+summary(gam_lb.cmac)
+anova(gam_lb.cmac) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.cmac<-visreg(gam_lb.cmac, "yearly.dd.accum", partial=F, rug=FALSE, 
+                           overlay=T, scale="response", gg=TRUE,
+                           line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.cmac
+
+withinyear.rain.cmac<-visreg(gam_lb.cmac, "weekly.precip",  partial=F, rug=FALSE, 
+                             overlay=T, scale="response", gg=TRUE,
+                             line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.cmac
+
+withinyear.temp.cmac<-visreg(gam_lb.cmac, "max.temp",  partial=F, rug=FALSE, 
+                             overlay=T, scale="response", gg=TRUE,
+                             line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.cmac
+
+withinyear.mintemp.cmac<-visreg(gam_lb.cmac, "min.temp",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.cmac
+
+withinyear.habitat.cmac<-visreg(gam_lb.cmac, "HABITAT",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.cmac
+
+withinyear.yearly.cmac<-visreg(gam_lb.cmac, "year",   partial=F, rug=FALSE, 
+                               overlay=T, scale="response", gg=TRUE,
+                               line=list(lty=1, col=nativepal[3]), fill=list(fill=nativepal[3], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.cmac
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.cmac<-plot_grid(withinyear.yearly.cmac,withinyear.dd.cmac,  withinyear.mintemp.cmac, withinyear.temp.cmac, withinyear.rain.cmac, withinyear.habitat.cmac,  
+                                     ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.cmac
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.cmac<-plot_grid(partresid, withinyear.modelplot.cmac, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.cmac
+
+pdf("plots/figurewithinyeargamcmac.pdf", height=10, width=5)
+withinyear.plot.cmac
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for cmac, holding everything constant but degree days
+#from plot, cmac likes 1992, 1100dd, 17min, 28 max, o precip, maize- multiple maxima but chose ones closest to 'normal' range
+newData.cmac.dd <- with(lb_all.cmac,
+                        data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                   TRAPS=5, 
+                                   year=1992, #select year when this species is most abundant- 1990
+                                   weekly.precip=0, # species likes it dry
+                                   max.temp=28, #species maxes near 28
+                                   min.temp=17, #species maxes near 17
+                                   SPID="CMAC", 
+                                   HABITAT="maize")) #species likes corn best
+
+#make the same frame but for 1 more degday
+newData.cmac.1.dd<- with(lb_all.cmac,
+                         data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                    TRAPS=5, 
+                                    year=1992, #select year when this species is most abundant- 1990
+                                    weekly.precip=0, # species likes it dry
+                                    max.temp=28, #species maxes near 28
+                                    min.temp=17, #species maxes near 17
+                                    SPID="CMAC", 
+                                    HABITAT="maize")) #species likes corn best
+
+#make predictions
+predict.dd.cmac<-predict(gam_lb.cmac, newData.cmac.dd, type="link")
+predict.dd.cmac.1<-predict(gam_lb.cmac, newData.cmac.1.dd, type="link")
+
+dd.cmac.der<-as.data.frame(cbind(newData.cmac.dd$yearly.dd.accum, predict.dd.cmac, predict.dd.cmac.1))
+dd.cmac.der$slope<-(dd.cmac.der$predict.dd.cmac.1-dd.cmac.der$predict.dd.cmac)/1
+
+#slope approaches zero at 1128 degree days ans also increasing towards zero- early season activity, then lull, then later season peak (we look for places where the slope changes from negative to positive or vice versa)- 
+#note dd is not significant in the model but data suggests two adult activity peaks- 2 generations per year
+
+#create data for cmac, holding everything constant but minimum temperature
+#from plot, cmac likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+newData.cmac.mint <- with(lb_all.cmac,
+                          data.frame(yearly.dd.accum = 1100,
+                                     TRAPS=5, 
+                                     year=1992, #select year when this species is most abundant- 1990
+                                     weekly.precip=0, # species likes it dry
+                                     max.temp=28, #species maxes near 28
+                                     min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                     SPID="CMAC", 
+                                     HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cmac.1.mint<- with(lb_all.cmac,
+                           data.frame(yearly.dd.accum = 1100,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=28, #species maxes near 28
+                                      min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                      SPID="CMAC", 
+                                      HABITAT="maize")) #species likes maize best
+
+#make predictions
+predict.mint.cmac<-predict(gam_lb.cmac, newData.cmac.mint, type="link")
+predict.mint.cmac.1<-predict(gam_lb.cmac, newData.cmac.1.mint, type="link")
+
+mint.cmac.der<-as.data.frame(cbind(newData.cmac.mint$min.temp, predict.mint.cmac, predict.mint.cmac.1))
+mint.cmac.der$slope<-(mint.cmac.der$predict.mint.cmac.1-mint.cmac.der$predict.mint.cmac)/1
+
+
+#slope approaches zero at minimum temperature of 10.5 C
+#significant factor in the model
+
+
+#create data for cmac, holding everything constant but maximum temperature
+#from plot, cmac likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+
+newData.cmac.maxt <- with(lb_all.cmac,
+                          data.frame(yearly.dd.accum = 1100,
+                                     TRAPS=5, 
+                                     year=1992, #select year when this species is most abundant- 1990
+                                     weekly.precip=0, # species likes it dry
+                                     max.temp=seq(18, 40, length = 300), #use natural range of data
+                                     min.temp= 17, #species maxes near 17
+                                     SPID="CMAC", 
+                                     HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cmac.1.maxt<- with(lb_all.cmac,
+                           data.frame(yearly.dd.accum = 1100,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1990
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                      min.temp= 17, #species maxes near 17
+                                      SPID="CMAC", 
+                                      HABITAT="maize")) #species likes maize best
+
+
+#make predictions
+predict.maxt.cmac<-predict(gam_lb.cmac, newData.cmac.maxt, type="link")
+predict.maxt.cmac.1<-predict(gam_lb.cmac, newData.cmac.1.maxt, type="link")
+
+maxt.cmac.der<-as.data.frame(cbind(newData.cmac.maxt$max.temp, predict.maxt.cmac, predict.maxt.cmac.1))
+maxt.cmac.der$slope<-(maxt.cmac.der$predict.maxt.cmac.1-maxt.cmac.der$predict.maxt.cmac)/1
+
+
+#slope approaches zero at max temperature of 28.1, 36.5 C
+#significant factor in the model
+
+
+#create data for cmac, holding everything constant but precipitation
+#from plot, cmac likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+newData.cmac.precip <- with(lb_all.cmac,
+                            data.frame(yearly.dd.accum = 1100,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1990
+                                       weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                       max.temp=28, #species maxes near 28
+                                       min.temp= 17, #species maxes near 17
+                                       SPID="CMAC", 
+                                       HABITAT="maize")) #species likes maize best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cmac.1.precip<- with(lb_all.cmac,
+                             data.frame(yearly.dd.accum = 1100,
+                                        TRAPS=5, 
+                                        year=1992, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                        max.temp=28, #species maxes near 28
+                                        min.temp= 17, #species maxes near 17
+                                        SPID="CMAC", 
+                                        HABITAT="maize")) #species likes maize best
+
+#make predictions
+predict.precip.cmac<-predict(gam_lb.cmac, newData.cmac.precip, type="link")
+predict.precip.cmac.1<-predict(gam_lb.cmac, newData.cmac.1.precip, type="link")
+
+precip.cmac.der<-as.data.frame(cbind(newData.cmac.precip$weekly.precip, predict.precip.cmac, predict.precip.cmac.1))
+precip.cmac.der$slope<-(precip.cmac.der$predict.precip.cmac.1-precip.cmac.der$predict.precip.cmac)/1
+
+#this species peaks at zero- no rain
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.cmac.habitat<- with(lb_all.cmac,
+                            data.frame(yearly.dd.accum = 1100,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1990
+                                       weekly.precip=0, # species likes it dry
+                                       max.temp=28, #species maxes near 28
+                                       min.temp= 17, #species maxes near 17
+                                       SPID="CMAC", 
+                                       HABITAT=c("maize")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.cmac, newData.cmac.habitat, type="link")
+
+
+#poplar 0.57, coniferous 0.67
