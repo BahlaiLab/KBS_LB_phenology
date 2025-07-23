@@ -608,7 +608,7 @@ library(reshape2)
 library(vegan)
 
 #let's visualize this!
-nativepal<-c("orange", "red", "pink", "yellow4","yellow", "blue", "purple", "coral",  "palegreen", "violet")
+nativepal<-c("orange", "red", "pink", "yellow4","lightblue", "blue", "purple", "coral",  "palegreen", "violet")
 
 #create a matrix of observations by community
 #create parallel yearly and weekly analyses
@@ -1469,7 +1469,7 @@ dev.off()
 newData.cmac.dd <- with(lb_all.cmac,
                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
                                    TRAPS=5, 
-                                   year=1992, #select year when this species is most abundant- 1990
+                                   year=1992, #select year when this species is most abundant- 1992
                                    weekly.precip=0, # species likes it dry
                                    max.temp=28, #species maxes near 28
                                    min.temp=17, #species maxes near 17
@@ -1533,7 +1533,7 @@ mint.cmac.der$slope<-(mint.cmac.der$predict.mint.cmac.1-mint.cmac.der$predict.mi
 
 
 #create data for cmac, holding everything constant but maximum temperature
-#from plot, cmac likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+#from plot, cmac likes 1992, 1100dd, 17 min, 28 max, 0 precip, maize-
 
 newData.cmac.maxt <- with(lb_all.cmac,
                           data.frame(yearly.dd.accum = 1100,
@@ -1549,7 +1549,7 @@ newData.cmac.maxt <- with(lb_all.cmac,
 newData.cmac.1.maxt<- with(lb_all.cmac,
                            data.frame(yearly.dd.accum = 1100,
                                       TRAPS=5, 
-                                      year=1992, #select year when this species is most abundant- 1990
+                                      year=1992, #select year when this species is most abundant- 1992
                                       weekly.precip=0, # species likes it dry
                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
                                       min.temp= 17, #species maxes near 17
@@ -1619,19 +1619,274 @@ predict(gam_lb.cmac, newData.cmac.habitat, type="link")
 
 #maize max at 3.2
 
-##################### cstig 
+  ##################### cstig 
+  
+  lb_all.cstig<-lb_all[which(lb_all$SPID=="CSTIG"),]
+  
+  gam_lb.cstig<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                      s(weekly.precip, sp=1)+
+                      s(max.temp, sp=1)+
+                      s(min.temp, sp=1)+ 
+                      HABITAT+
+                      s(year, sp=1)+
+                      offset(log(TRAPS)), method="REML", data=lb_all.cstig, family="quasipoisson")
+  summary(gam_lb.cstig)
+  anova(gam_lb.cstig) #significance of parametric terms
+  
+  #not run- causes hangups in casual runs!
+  # #check concurvity
+  # concurvity(gam_lb)
+  # #looks fine, sweet!
+  # gam.check(gam_lb)
+  
+  
+  withinyear.dd.cstig<-visreg(gam_lb.cstig, "yearly.dd.accum", partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Degree day accumulation", y="")+
+    theme_classic()+ theme(legend.position = "none")
+  
+  withinyear.dd.cstig
+  
+  withinyear.rain.cstig<-visreg(gam_lb.cstig, "weekly.precip",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Total precip within week (mm)", y="")+
+    theme_classic()+ theme(legend.position = "none")
+  
+  withinyear.rain.cstig
+  
+  withinyear.temp.cstig<-visreg(gam_lb.cstig, "max.temp",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Maximum temperature within week (C)", y="")+
+    theme_classic()+ theme(legend.position = "none")+
+    coord_cartesian(xlim=c(0, 40))
+  
+  withinyear.temp.cstig
+  
+  withinyear.mintemp.cstig<-visreg(gam_lb.cstig, "min.temp",  partial=F, rug=FALSE, 
+                                   overlay=T, scale="response", gg=TRUE,
+                                   line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Minimum temperature within week (C)", y="")+
+    theme_classic()+ theme(legend.position = "none")+
+    coord_cartesian(xlim=c(0, 40))
+  
+  withinyear.mintemp.cstig
+  
+  withinyear.habitat.cstig<-visreg(gam_lb.cstig, "HABITAT",  partial=F, rug=FALSE, 
+                                   overlay=T, scale="response", gg=TRUE,
+                                   line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Habitat", y="")+
+    theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+  
+  withinyear.habitat.cstig
+  
+  withinyear.yearly.cstig<-visreg(gam_lb.cstig, "year",   partial=F, rug=FALSE, 
+                                  overlay=T, scale="response", gg=TRUE,
+                                  line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+    labs(x="Year", y="")+
+    theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+    coord_cartesian(xlim=c(1989, 2024))
+  
+  
+  withinyear.yearly.cstig
+  
+  #plot the withinyear model all together:
+  
+  withinyear.modelplot.cstig<-plot_grid(withinyear.yearly.cstig,withinyear.dd.cstig,  withinyear.mintemp.cstig, withinyear.temp.cstig, withinyear.rain.cstig, withinyear.habitat.cstig,  
+                                        ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+  withinyear.modelplot.cstig
+  
+  #create overall y axis label
+  partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+  
+  
+  #now replot with grob label
+  withinyear.plot.cstig<-plot_grid(partresid, withinyear.modelplot.cstig, ncol=2, rel_widths = c(1,11))
+  
+  withinyear.plot.cstig
+  
+  pdf("plots/figurewithinyeargamcstig.pdf", height=10, width=5)
+  withinyear.plot.cstig
+  dev.off()
+  
+  
+  #we'll want to extract the data associated with activity peaks
+  
+  #ok, I think we found the method we should use! here's the tutorial:
+  # https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+  
+  #first we create a new dataframe that we can use our model to predict the values for optima
+  #we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+  
+  #create data for cstig, holding everything constant but degree days
+  #from plot, cstig likes 1992, 200dd, 9min, 24 max, 30 precip, deciduous- multiple maxima but chose ones closest to 'normal' range
+  newData.cstig.dd <- with(lb_all.cstig,
+                           data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1992
+                                      weekly.precip=30, # species likes moderate precipitation
+                                      max.temp=24, #species maxes near 24
+                                      min.temp=9, #species maxes near 9
+                                      SPID="CSTIG", 
+                                      HABITAT="deciduous")) #species likes deciduous best
+  
+  #make the same frame but for 1 more degday
+  newData.cstig.1.dd<- with(lb_all.cstig,
+                            data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1992
+                                       weekly.precip=30, # species likes moderate precipitation
+                                       max.temp=24, #species maxes near 24
+                                       min.temp=9, #species maxes near 9
+                                       SPID="CSTIG", 
+                                       HABITAT="deciduous")) #species likes deciduous best
+  
+  #make predictions
+  predict.dd.cstig<-predict(gam_lb.cstig, newData.cstig.dd, type="link")
+  predict.dd.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.dd, type="link")
+  
+  dd.cstig.der<-as.data.frame(cbind(newData.cstig.dd$yearly.dd.accum, predict.dd.cstig, predict.dd.cstig.1))
+  dd.cstig.der$slope<-(dd.cstig.der$predict.dd.cstig.1-dd.cstig.der$predict.dd.cstig)/1
+  
+  #slope is largely negative from early in the season suggesting activity peak is earlier than monitoring starts- and one generation per year
+  
 
-lb_all.cstig<-lb_all[which(lb_all$SPID=="CSTIG"),]
+#### start here!!!
+#create data for cstig, holding everything constant but minimum temperature
+#from plot, cstig likes 1992, 200dd, 9 min, 24 max, 30 precip, deciduous-
+newData.cstig.mint <- with(lb_all.cstig,
+                           data.frame(yearly.dd.accum = 200,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1992
+                                      weekly.precip=30, # species likes moderate precipitation
+                                      max.temp=24, #species maxes near 24
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="CSTIG", 
+                                      HABITAT="deciduous")) #species likes deciduous best
 
-gam_lb.cstig<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.mint<- with(lb_all.cstig,
+                            data.frame(yearly.dd.accum = 200,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1992
+                                       weekly.precip=30, # species likes moderate precipitation
+                                       max.temp=24, #species maxes near 24
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="CSTIG", 
+                                       HABITAT="deciduous")) #species likes deciduous best
+
+#make predictions
+predict.mint.cstig<-predict(gam_lb.cstig, newData.cstig.mint, type="link")
+predict.mint.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.mint, type="link")
+
+mint.cstig.der<-as.data.frame(cbind(newData.cstig.mint$min.temp, predict.mint.cstig, predict.mint.cstig.1))
+mint.cstig.der$slope<-(mint.cstig.der$predict.mint.cstig.1-mint.cstig.der$predict.mint.cstig)/1
+
+
+#not a significant factor in the model, slope changes very little in scale of data
+
+
+#create data for cstig, holding everything constant but maximum temperature
+#from plot, cstig likes 1992, 200dd, 9 min, 24 max, 30 precip, deciduous-
+
+newData.cstig.maxt <- with(lb_all.cstig,
+                           data.frame(yearly.dd.accum = 200,
+                                      TRAPS=5, 
+                                      year=1992, #select year when this species is most abundant- 1992
+                                      weekly.precip=30, # species likes it drymoderate precipitation
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp= 9, #species maxes near 9
+                                      SPID="CSTIG", 
+                                      HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.maxt<- with(lb_all.cstig,
+                            data.frame(yearly.dd.accum = 200,
+                                       TRAPS=5, 
+                                       year=1992, #select year when this species is most abundant- 1992
+                                       weekly.precip=30, # species likes moderate precipitation
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp= 9, #species maxes near 9
+                                       SPID="CSTIG", 
+                                       HABITAT="deciduous")) #species likes deciduous best
+
+
+#make predictions
+predict.maxt.cstig<-predict(gam_lb.cstig, newData.cstig.maxt, type="link")
+predict.maxt.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.maxt, type="link")
+
+maxt.cstig.der<-as.data.frame(cbind(newData.cstig.maxt$max.temp, predict.maxt.cstig, predict.maxt.cstig.1))
+maxt.cstig.der$slope<-(maxt.cstig.der$predict.maxt.cstig.1-maxt.cstig.der$predict.maxt.cstig)/1
+
+
+#not a significant factor in the model, slope changes very little in scale of data
+
+
+#create data for cstig, holding everything constant but precipitation
+#from plot, cstig likes 1992, 200dd, 9min, 24 max, 30 precip, deciduous-
+newData.cstig.precip <- with(lb_all.cstig,
+                             data.frame(yearly.dd.accum = 200,
+                                        TRAPS=5, 
+                                        year=1992, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=24, #species maxes near 28
+                                        min.temp= 9, #species maxes near 17
+                                        SPID="CSTIG", 
+                                        HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cstig.1.precip<- with(lb_all.cstig,
+                              data.frame(yearly.dd.accum = 200,
+                                         TRAPS=5, 
+                                         year=1992, #select year when this species is most abundant- 1990
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=24, #species maxes near 28
+                                         min.temp= 9, #species maxes near 17
+                                         SPID="CSTIG", 
+                                         HABITAT="deciduous")) #species likes deciduous best
+
+#make predictions
+predict.precip.cstig<-predict(gam_lb.cstig, newData.cstig.precip, type="link")
+predict.precip.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.precip, type="link")
+
+precip.cstig.der<-as.data.frame(cbind(newData.cstig.precip$weekly.precip, predict.precip.cstig, predict.precip.cstig.1))
+precip.cstig.der$slope<-(precip.cstig.der$predict.precip.cstig.1-precip.cstig.der$predict.precip.cstig)/1
+
+#not a significant factor in the model, slope changes very little in scale of data
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.cstig.habitat<- with(lb_all.cstig,
+                             data.frame(yearly.dd.accum = 200,
+                                        TRAPS=5, 
+                                        year=1992, #select year when this species is most abundant- 1992
+                                        weekly.precip=30, # species likes moderate precipitation
+                                        max.temp=24, #species maxes near 24
+                                        min.temp= 9, #species maxes near 9
+                                        SPID="CSTIG", 
+                                        HABITAT=c("deciduous")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.cstig, newData.cstig.habitat, type="link")
+
+
+#deciduous max at -0.2
+
+
+##################### ctrif 
+
+lb_all.ctrif<-lb_all[which(lb_all$SPID=="CTRIF"),]
+
+gam_lb.ctrif<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
                     s(weekly.precip, sp=1)+
                     s(max.temp, sp=1)+
                     s(min.temp, sp=1)+ 
                     HABITAT+
                     s(year, sp=1)+
-                    offset(log(TRAPS)), method="REML", data=lb_all.cstig, family="quasipoisson")
-summary(gam_lb.cstig)
-anova(gam_lb.cstig) #significance of parametric terms
+                    offset(log(TRAPS)), method="REML", data=lb_all.ctrif, family="quasipoisson")
+summary(gam_lb.ctrif)
+anova(gam_lb.ctrif) #significance of parametric terms
 
 #not run- causes hangups in casual runs!
 # #check concurvity
@@ -1640,75 +1895,75 @@ anova(gam_lb.cstig) #significance of parametric terms
 # gam.check(gam_lb)
 
 
-withinyear.dd.cstig<-visreg(gam_lb.cstig, "yearly.dd.accum", partial=F, rug=FALSE, 
+withinyear.dd.ctrif<-visreg(gam_lb.ctrif, "yearly.dd.accum", partial=F, rug=FALSE, 
                             overlay=T, scale="response", gg=TRUE,
-                            line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                            line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Degree day accumulation", y="")+
   theme_classic()+ theme(legend.position = "none")
 
-withinyear.dd.cstig
+withinyear.dd.ctrif
 
-withinyear.rain.cstig<-visreg(gam_lb.cstig, "weekly.precip",  partial=F, rug=FALSE, 
+withinyear.rain.ctrif<-visreg(gam_lb.ctrif, "weekly.precip",  partial=F, rug=FALSE, 
                               overlay=T, scale="response", gg=TRUE,
-                              line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                              line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Total precip within week (mm)", y="")+
   theme_classic()+ theme(legend.position = "none")
 
-withinyear.rain.cstig
+withinyear.rain.ctrif
 
-withinyear.temp.cstig<-visreg(gam_lb.cstig, "max.temp",  partial=F, rug=FALSE, 
+withinyear.temp.ctrif<-visreg(gam_lb.ctrif, "max.temp",  partial=F, rug=FALSE, 
                               overlay=T, scale="response", gg=TRUE,
-                              line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                              line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Maximum temperature within week (C)", y="")+
   theme_classic()+ theme(legend.position = "none")+
   coord_cartesian(xlim=c(0, 40))
 
-withinyear.temp.cstig
+withinyear.temp.ctrif
 
-withinyear.mintemp.cstig<-visreg(gam_lb.cstig, "min.temp",  partial=F, rug=FALSE, 
+withinyear.mintemp.ctrif<-visreg(gam_lb.ctrif, "min.temp",  partial=F, rug=FALSE, 
                                  overlay=T, scale="response", gg=TRUE,
-                                 line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                                 line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Minimum temperature within week (C)", y="")+
   theme_classic()+ theme(legend.position = "none")+
   coord_cartesian(xlim=c(0, 40))
 
-withinyear.mintemp.cstig
+withinyear.mintemp.ctrif
 
-withinyear.habitat.cstig<-visreg(gam_lb.cstig, "HABITAT",  partial=F, rug=FALSE, 
+withinyear.habitat.ctrif<-visreg(gam_lb.ctrif, "HABITAT",  partial=F, rug=FALSE, 
                                  overlay=T, scale="response", gg=TRUE,
-                                 line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                                 line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Habitat", y="")+
   theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
 
-withinyear.habitat.cstig
+withinyear.habitat.ctrif
 
-withinyear.yearly.cstig<-visreg(gam_lb.cstig, "year",   partial=F, rug=FALSE, 
+withinyear.yearly.ctrif<-visreg(gam_lb.ctrif, "year",   partial=F, rug=FALSE, 
                                 overlay=T, scale="response", gg=TRUE,
-                                line=list(lty=1, col=nativepal[4]), fill=list(fill=nativepal[4], alpha=0.4))+
+                                line=list(lty=1, col=nativepal[5]), fill=list(fill=nativepal[5], alpha=0.4))+
   labs(x="Year", y="")+
   theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
   coord_cartesian(xlim=c(1989, 2024))
 
 
-withinyear.yearly.cstig
+withinyear.yearly.ctrif
 
 #plot the withinyear model all together:
 
-withinyear.modelplot.cstig<-plot_grid(withinyear.yearly.cstig,withinyear.dd.cstig,  withinyear.mintemp.cstig, withinyear.temp.cstig, withinyear.rain.cstig, withinyear.habitat.cstig,  
+withinyear.modelplot.ctrif<-plot_grid(withinyear.yearly.ctrif,withinyear.dd.ctrif,  withinyear.mintemp.ctrif, withinyear.temp.ctrif, withinyear.rain.ctrif, withinyear.habitat.ctrif,  
                                       ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
-withinyear.modelplot.cstig
+withinyear.modelplot.ctrif
 
 #create overall y axis label
 partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
 
 
 #now replot with grob label
-withinyear.plot.cstig<-plot_grid(partresid, withinyear.modelplot.cstig, ncol=2, rel_widths = c(1,11))
+withinyear.plot.ctrif<-plot_grid(partresid, withinyear.modelplot.ctrif, ncol=2, rel_widths = c(1,11))
 
-withinyear.plot.cstig
+withinyear.plot.ctrif
 
-pdf("plots/figurewithinyeargamcstig.pdf", height=10, width=5)
-withinyear.plot.cstig
+pdf("plots/figurewithinyeargamctrif.pdf", height=10, width=5)
+withinyear.plot.ctrif
 dev.off()
 
 
@@ -1720,161 +1975,1422 @@ dev.off()
 #first we create a new dataframe that we can use our model to predict the values for optima
 #we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
 
-#create data for cstig, holding everything constant but degree days
-#from plot, cstig likes 1992, 200dd, 9min, 24 max, 30 precip, deciduous- multiple maxima but chose ones closest to 'normal' range
-newData.cstig.dd <- with(lb_all.cstig,
+#create data for ctrif, holding everything constant but degree days
+#from plot, ctrif likes 1990, 200dd, 8 min, 35 max, 0 precip, ES- multiple maxima but chose ones closest to 'normal' range
+newData.ctrif.dd <- with(lb_all.ctrif,
                          data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
                                     TRAPS=5, 
-                                    year=1992, #select year when this species is most abundant- 1990
-                                    weekly.precip=30, # species likes it dry
-                                    max.temp=24, #species maxes near 24
-                                    min.temp=9, #species maxes near 17
-                                    SPID="CSTIG", 
-                                    HABITAT="deciduous")) #species likes deciduous best
+                                    year=1990, #select year when this species is most abundant- 1990
+                                    weekly.precip=0, # species likes it dry
+                                    max.temp=35, #species maxes near 35
+                                    min.temp=8, #species maxes near 8
+                                    SPID="CTRIF", 
+                                    HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 1 more degday
-newData.cstig.1.dd<- with(lb_all.cstig,
+newData.ctrif.1.dd<- with(lb_all.ctrif,
                           data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
                                      TRAPS=5, 
-                                     year=1992, #select year when this species is most abundant- 1990
-                                     weekly.precip=30, # species likes it dry
-                                     max.temp=24, #species maxes near 24
-                                     min.temp=9, #species maxes near 17
-                                     SPID="CSTIG", 
-                                     HABITAT="deciduous")) #species likes deciduous best
+                                     year=1990, #select year when this species is most abundant- 1990
+                                     weekly.precip=0, # species likes it dry
+                                     max.temp=35, #species maxes near 35
+                                     min.temp=8, #species maxes near 8
+                                     SPID="CTRIF", 
+                                     HABITAT="ES")) #species likes ES best
 
 #make predictions
-predict.dd.cstig<-predict(gam_lb.cstig, newData.cstig.dd, type="link")
-predict.dd.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.dd, type="link")
+predict.dd.ctrif<-predict(gam_lb.ctrif, newData.ctrif.dd, type="link")
+predict.dd.ctrif.1<-predict(gam_lb.ctrif, newData.ctrif.1.dd, type="link")
 
-dd.cstig.der<-as.data.frame(cbind(newData.cstig.dd$yearly.dd.accum, predict.dd.cstig, predict.dd.cstig.1))
-dd.cstig.der$slope<-(dd.cstig.der$predict.dd.cstig.1-dd.cstig.der$predict.dd.cstig)/1
+dd.ctrif.der<-as.data.frame(cbind(newData.ctrif.dd$yearly.dd.accum, predict.dd.ctrif, predict.dd.ctrif.1))
+dd.ctrif.der$slope<-(dd.ctrif.der$predict.dd.ctrif.1-dd.ctrif.der$predict.dd.ctrif)/1
 
-#slope  is largely negative from early in the season suggesting activity peak is earlier than monitoring starts- and one generation per year
+#not a significant factor in the model
 
-
-#### start here!!!
-#create data for cstig, holding everything constant but minimum temperature
-#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
-newData.cstig.mint <- with(lb_all.cstig,
-                           data.frame(yearly.dd.accum = 1100,
+#create data for ctrif, holding everything constant but minimum temperature
+#from plot, ctrif likes 1990, 200dd, 8 min, 35 max, 0 precip, ES-
+newData.ctrif.mint <- with(lb_all.ctrif,
+                           data.frame(yearly.dd.accum = 200,
                                       TRAPS=5, 
-                                      year=1992, #select year when this species is most abundant- 1990
+                                      year=1990, #select year when this species is most abundant- 1990
                                       weekly.precip=0, # species likes it dry
-                                      max.temp=28, #species maxes near 28
+                                      max.temp=35, #species maxes near 35
                                       min.temp= seq(-5, 18, length = 300), #use natural range of data
-                                      SPID="CSTIG", 
-                                      HABITAT="maize")) #species likes maize best
+                                      SPID="CTRIF", 
+                                      HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.cstig.1.mint<- with(lb_all.cstig,
-                            data.frame(yearly.dd.accum = 1100,
+newData.ctrif.1.mint<- with(lb_all.ctrif,
+                            data.frame(yearly.dd.accum = 200,
                                        TRAPS=5, 
-                                       year=1992, #select year when this species is most abundant- 1990
+                                       year=1990, #select year when this species is most abundant- 1990
                                        weekly.precip=0, # species likes it dry
-                                       max.temp=28, #species maxes near 28
+                                       max.temp=35, #species maxes near 35
                                        min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
-                                       SPID="CSTIG", 
-                                       HABITAT="maize")) #species likes maize best
+                                       SPID="CTRIF", 
+                                       HABITAT="ES")) #species likes ES best
 
 #make predictions
-predict.mint.cstig<-predict(gam_lb.cstig, newData.cstig.mint, type="link")
-predict.mint.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.mint, type="link")
+predict.mint.ctrif<-predict(gam_lb.ctrif, newData.ctrif.mint, type="link")
+predict.mint.ctrif.1<-predict(gam_lb.ctrif, newData.ctrif.1.mint, type="link")
 
-mint.cstig.der<-as.data.frame(cbind(newData.cstig.mint$min.temp, predict.mint.cstig, predict.mint.cstig.1))
-mint.cstig.der$slope<-(mint.cstig.der$predict.mint.cstig.1-mint.cstig.der$predict.mint.cstig)/1
-
-
-#slope approaches zero at minimum temperature of 10.5 C
-#significant factor in the model
+mint.ctrif.der<-as.data.frame(cbind(newData.ctrif.mint$min.temp, predict.mint.ctrif, predict.mint.ctrif.1))
+mint.ctrif.der$slope<-(mint.ctrif.der$predict.mint.ctrif.1-mint.ctrif.der$predict.mint.ctrif)/1
 
 
-#create data for cstig, holding everything constant but maximum temperature
-#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
+#not a significant factor in the model
 
-newData.cstig.maxt <- with(lb_all.cstig,
-                           data.frame(yearly.dd.accum = 1100,
+#create data for ctrif, holding everything constant but maximum temperature
+#from plot, ctrif likes 1990, 200dd, 8 min, 35 max, 0 precip, ES-
+
+newData.ctrif.maxt <- with(lb_all.ctrif,
+                           data.frame(yearly.dd.accum = 200,
                                       TRAPS=5, 
-                                      year=1992, #select year when this species is most abundant- 1990
+                                      year=1990, #select year when this species is most abundant- 1990
                                       weekly.precip=0, # species likes it dry
                                       max.temp=seq(18, 40, length = 300), #use natural range of data
-                                      min.temp= 17, #species maxes near 17
-                                      SPID="CSTIG", 
-                                      HABITAT="maize")) #species likes maize best
+                                      min.temp=8, #species maxes near 8
+                                      SPID="CTRIF", 
+                                      HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.cstig.1.maxt<- with(lb_all.cstig,
-                            data.frame(yearly.dd.accum = 1100,
+newData.ctrif.1.maxt<- with(lb_all.ctrif,
+                            data.frame(yearly.dd.accum = 200,
                                        TRAPS=5, 
-                                       year=1992, #select year when this species is most abundant- 1990
+                                       year=1990, #select year when this species is most abundant- 1990
                                        weekly.precip=0, # species likes it dry
                                        max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
-                                       min.temp= 17, #species maxes near 17
-                                       SPID="CSTIG", 
-                                       HABITAT="maize")) #species likes maize best
-
-
+                                       min.temp=8, #species maxes near 8
+                                       SPID="CTRIF", 
+                                       HABITAT="ES")) #species likes ES best
 #make predictions
-predict.maxt.cstig<-predict(gam_lb.cstig, newData.cstig.maxt, type="link")
-predict.maxt.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.maxt, type="link")
+predict.maxt.ctrif<-predict(gam_lb.ctrif, newData.ctrif.maxt, type="link")
+predict.maxt.ctrif.1<-predict(gam_lb.ctrif, newData.ctrif.1.maxt, type="link")
 
-maxt.cstig.der<-as.data.frame(cbind(newData.cstig.maxt$max.temp, predict.maxt.cstig, predict.maxt.cstig.1))
-maxt.cstig.der$slope<-(maxt.cstig.der$predict.maxt.cstig.1-maxt.cstig.der$predict.maxt.cstig)/1
+maxt.ctrif.der<-as.data.frame(cbind(newData.ctrif.maxt$max.temp, predict.maxt.ctrif, predict.maxt.ctrif.1))
+maxt.ctrif.der$slope<-(maxt.ctrif.der$predict.maxt.ctrif.1-maxt.ctrif.der$predict.maxt.ctrif)/1
 
 
-#slope approaches zero at max temperature of 28.1, 36.5 C
+#
 #significant factor in the model
 
 
-#create data for cstig, holding everything constant but precipitation
-#from plot, cstig likes 1992, 1100dd, 17min, 28 max, o precip, maize-
-newData.cstig.precip <- with(lb_all.cstig,
-                             data.frame(yearly.dd.accum = 1100,
+#create data for ctrif, holding everything constant but precipitation
+#from plot, ctrif likes 1990, 200dd, 8 min, 35 max, 0 precip, ES-
+newData.ctrif.precip <- with(lb_all.ctrif,
+                             data.frame(yearly.dd.accum = 200,
                                         TRAPS=5, 
-                                        year=1992, #select year when this species is most abundant- 1990
+                                        year=1990, #select year when this species is most abundant- 1990
                                         weekly.precip=seq(0, 150, length = 300), #use natural range of data
-                                        max.temp=28, #species maxes near 28
-                                        min.temp= 17, #species maxes near 17
-                                        SPID="CSTIG", 
-                                        HABITAT="maize")) #species likes maize best
+                                        max.temp=35, #species maxes near 35
+                                        min.temp= 8, #species maxes near 8
+                                        SPID="CTRIF", 
+                                        HABITAT="ES")) #species likes ES best
 
 #make the same frame but for 0.2 more degrees celcius
-newData.cstig.1.precip<- with(lb_all.cstig,
-                              data.frame(yearly.dd.accum = 1100,
+newData.ctrif.1.precip<- with(lb_all.ctrif,
+                              data.frame(yearly.dd.accum = 200,
                                          TRAPS=5, 
-                                         year=1992, #select year when this species is most abundant- 1990
+                                         year=1990, #select year when this species is most abundant- 1990
                                          weekly.precip=seq(1, 151, length = 300), #use natural range of data
-                                         max.temp=28, #species maxes near 28
-                                         min.temp= 17, #species maxes near 17
-                                         SPID="CSTIG", 
-                                         HABITAT="maize")) #species likes maize best
+                                         max.temp=35, #species maxes near 35
+                                         min.temp= 8, #species maxes near 8
+                                         SPID="CTRIF", 
+                                         HABITAT="ES")) #species likes ES best
 
 #make predictions
-predict.precip.cstig<-predict(gam_lb.cstig, newData.cstig.precip, type="link")
-predict.precip.cstig.1<-predict(gam_lb.cstig, newData.cstig.1.precip, type="link")
+predict.precip.ctrif<-predict(gam_lb.ctrif, newData.ctrif.precip, type="link")
+predict.precip.ctrif.1<-predict(gam_lb.ctrif, newData.ctrif.1.precip, type="link")
 
-precip.cstig.der<-as.data.frame(cbind(newData.cstig.precip$weekly.precip, predict.precip.cstig, predict.precip.cstig.1))
-precip.cstig.der$slope<-(precip.cstig.der$predict.precip.cstig.1-precip.cstig.der$predict.precip.cstig)/1
+precip.ctrif.der<-as.data.frame(cbind(newData.ctrif.precip$weekly.precip, predict.precip.ctrif, predict.precip.ctrif.1))
+precip.ctrif.der$slope<-(precip.ctrif.der$predict.precip.ctrif.1-precip.ctrif.der$predict.precip.ctrif)/1
 
-#this species peaks at zero- no rain
+#not a significant factor in the model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.ctrif.habitat<- with(lb_all.ctrif,
+                             data.frame(yearly.dd.accum = 200,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=0, # species likes it dry
+                                        max.temp=35, #species maxes near 35
+                                        min.temp=8, #species maxes near 8
+                                        SPID="CTRIF", 
+                                        HABITAT=c("ES")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.ctrif, newData.ctrif.habitat, type="link")
+
+
+#ES max at -3.0
+
+
+  ##################### cycsp 
+  
+  lb_all.cycsp<-lb_all[which(lb_all$SPID=="CYCSP"),]
+  
+  gam_lb.cycsp<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                      s(weekly.precip, sp=1)+
+                      s(max.temp, sp=1)+
+                      s(min.temp, sp=1)+ 
+                      HABITAT+
+                      s(year, sp=1)+
+                      offset(log(TRAPS)), method="REML", data=lb_all.cycsp, family="quasipoisson")
+  summary(gam_lb.cycsp)
+  anova(gam_lb.cycsp) #significance of parametric terms
+  
+  #not run- causes hangups in casual runs!
+  # #check concurvity
+  # concurvity(gam_lb)
+  # #looks fine, sweet!
+  # gam.check(gam_lb)
+  
+  
+  withinyear.dd.cycsp<-visreg(gam_lb.cycsp, "yearly.dd.accum", partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Degree day accumulation", y="")+
+    theme_classic()+ theme(legend.position = "none")
+  
+  withinyear.dd.cycsp
+  
+  withinyear.rain.cycsp<-visreg(gam_lb.cycsp, "weekly.precip",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Total precip within week (mm)", y="")+
+    theme_classic()+ theme(legend.position = "none")
+  
+  withinyear.rain.cycsp
+  
+  withinyear.temp.cycsp<-visreg(gam_lb.cycsp, "max.temp",  partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Maximum temperature within week (C)", y="")+
+    theme_classic()+ theme(legend.position = "none")+
+    coord_cartesian(xlim=c(0, 40))
+  
+  withinyear.temp.cycsp
+  
+  withinyear.mintemp.cycsp<-visreg(gam_lb.cycsp, "min.temp",  partial=F, rug=FALSE, 
+                                   overlay=T, scale="response", gg=TRUE,
+                                   line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Minimum temperature within week (C)", y="")+
+    theme_classic()+ theme(legend.position = "none")+
+    coord_cartesian(xlim=c(0, 40))
+  
+  withinyear.mintemp.cycsp
+  
+  withinyear.habitat.cycsp<-visreg(gam_lb.cycsp, "HABITAT",  partial=F, rug=FALSE, 
+                                   overlay=T, scale="response", gg=TRUE,
+                                   line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Habitat", y="")+
+    theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+  
+  withinyear.habitat.cycsp
+  
+  withinyear.yearly.cycsp<-visreg(gam_lb.cycsp, "year",   partial=F, rug=FALSE, 
+                                  overlay=T, scale="response", gg=TRUE,
+                                  line=list(lty=1, col=nativepal[6]), fill=list(fill=nativepal[6], alpha=0.4))+
+    labs(x="Year", y="")+
+    theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+    coord_cartesian(xlim=c(1989, 2024))
+  
+  
+  withinyear.yearly.cycsp
+  
+  #plot the withinyear model all together:
+  
+  withinyear.modelplot.cycsp<-plot_grid(withinyear.yearly.cycsp,withinyear.dd.cycsp,  withinyear.mintemp.cycsp, withinyear.temp.cycsp, withinyear.rain.cycsp, withinyear.habitat.cycsp,  
+                                        ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+  withinyear.modelplot.cycsp
+  
+  #create overall y axis label
+  partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+  
+  
+  #now replot with grob label
+  withinyear.plot.cycsp<-plot_grid(partresid, withinyear.modelplot.cycsp, ncol=2, rel_widths = c(1,11))
+  
+  withinyear.plot.cycsp
+  
+  pdf("plots/figurewithinyeargamcycsp.pdf", height=10, width=5)
+  withinyear.plot.cycsp
+  dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for cycsp, holding everything constant but degree days
+#from plot, cycsp likes 1990, 1200dd, 15min, 35 max, 120 precip, poplar- multiple maxima but chose ones closest to 'normal' range
+newData.cycsp.dd <- with(lb_all.cycsp,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=1990, #select year when this species is most abundant- 1990
+                                    weekly.precip=120, # species likes it wet
+                                    max.temp=35, #species maxes near 35
+                                    min.temp=15, #species maxes near 15
+                                    SPID="CYCSP", 
+                                    HABITAT="poplar")) #species likes poplar best
+
+#make the same frame but for 1 more degday
+newData.cycsp.1.dd<- with(lb_all.cycsp,
+                          data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                     TRAPS=5, 
+                                     year=1990, #select year when this species is most abundant- 1990
+                                     weekly.precip=120, # species likes it wet
+                                     max.temp=35, #species maxes near 35
+                                     min.temp=15, #species maxes near 15
+                                     SPID="CYCSP", 
+                                     HABITAT="poplar")) #species likes poplar best
+
+#make predictions
+predict.dd.cycsp<-predict(gam_lb.cycsp, newData.cycsp.dd, type="link")
+predict.dd.cycsp.1<-predict(gam_lb.cycsp, newData.cycsp.1.dd, type="link")
+
+dd.cycsp.der<-as.data.frame(cbind(newData.cycsp.dd$yearly.dd.accum, predict.dd.cycsp, predict.dd.cycsp.1))
+dd.cycsp.der$slope<-(dd.cycsp.der$predict.dd.cycsp.1-dd.cycsp.der$predict.dd.cycsp)/1
+
+#slope approaches zero at 1148 degree days and also decreases towards zero- very little early season activity, then gradual increase leading to later season peak (we look for places where the slope changes from negative to positive or vice versa)- 
+#note dd is significant in the model and data suggests two adult activity peaks- 2 generations per year
+
+#create data for cycsp, holding everything constant but minimum temperature
+#from plot, cycsp likes 1990, 1200dd, 15min, 35 max, 120 precip, poplar-
+newData.cycsp.mint <- with(lb_all.cycsp,
+                           data.frame(yearly.dd.accum = 1200,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=120, # species likes it wet
+                                      max.temp=35, #species maxes near 35
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="CYCSP", 
+                                      HABITAT="poplar")) #species likes poplar best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cycsp.1.mint<- with(lb_all.cycsp,
+                            data.frame(yearly.dd.accum = 1200,
+                                       TRAPS=5, 
+                                       year=1990, #select year when this species is most abundant- 1990
+                                       weekly.precip=120, # species likes it wet
+                                       max.temp=35, #species maxes near 35
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="CYCSP", 
+                                       HABITAT="poplar")) #species likes poplar best
+
+#make predictions
+predict.mint.cycsp<-predict(gam_lb.cycsp, newData.cycsp.mint, type="link")
+predict.mint.cycsp.1<-predict(gam_lb.cycsp, newData.cycsp.1.mint, type="link")
+
+mint.cycsp.der<-as.data.frame(cbind(newData.cycsp.mint$min.temp, predict.mint.cycsp, predict.mint.cycsp.1))
+mint.cycsp.der$slope<-(mint.cycsp.der$predict.mint.cycsp.1-mint.cycsp.der$predict.mint.cycsp)/1
+
+
+#slope approaches zero at minimum temperature of 14.2 C
+#significant factor in the model
+
+
+#create data for cycsp, holding everything constant but maximum temperature
+#from plot, cycsp likes 1990, 1200dd, 15 min, 35 max, 120 precip, poplar-
+
+newData.cycsp.maxt <- with(lb_all.cycsp,
+                           data.frame(yearly.dd.accum = 1200,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=120, # species likes it wet
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp= 15, #species maxes near 15
+                                      SPID="CYCSP", 
+                                      HABITAT="poplar")) #species likes poplar best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cycsp.1.maxt<- with(lb_all.cycsp,
+                            data.frame(yearly.dd.accum = 1200,
+                                       TRAPS=5, 
+                                       year=1990, #select year when this species is most abundant- 1990
+                                       weekly.precip=120, # species likes it wet
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp= 15, #species maxes near 15
+                                       SPID="CYCSP", 
+                                       HABITAT="poplar")) #species likes poplar best
+
+
+#make predictions
+predict.maxt.cycsp<-predict(gam_lb.cycsp, newData.cycsp.maxt, type="link")
+predict.maxt.cycsp.1<-predict(gam_lb.cycsp, newData.cycsp.1.maxt, type="link")
+
+maxt.cycsp.der<-as.data.frame(cbind(newData.cycsp.maxt$max.temp, predict.maxt.cycsp, predict.maxt.cycsp.1))
+maxt.cycsp.der$slope<-(maxt.cycsp.der$predict.maxt.cycsp.1-maxt.cycsp.der$predict.maxt.cycsp)/1
+
+
+
+# not a significant factor in the model
+
+
+#create data for cycsp, holding everything constant but precipitation
+#from plot, cycsp likes 1990, 1200dd, 15min, 35 max, 120 precip, poplar-
+newData.cycsp.precip <- with(lb_all.cycsp,
+                             data.frame(yearly.dd.accum = 1200,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=35, #species maxes near 35
+                                        min.temp= 15, #species maxes near 15
+                                        SPID="CYCSP", 
+                                        HABITAT="poplar")) #species likes poplar best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.cycsp.1.precip<- with(lb_all.cycsp,
+                              data.frame(yearly.dd.accum = 1200,
+                                         TRAPS=5, 
+                                         year=1990, #select year when this species is most abundant- 1990
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=35, #species maxes near 35
+                                         min.temp= 15, #species maxes near 15
+                                         SPID="CYCSP", 
+                                         HABITAT="poplar")) #species likes poplar best
+
+#make predictions
+predict.precip.cycsp<-predict(gam_lb.cycsp, newData.cycsp.precip, type="link")
+predict.precip.cycsp.1<-predict(gam_lb.cycsp, newData.cycsp.1.precip, type="link")
+
+precip.cycsp.der<-as.data.frame(cbind(newData.cycsp.precip$weekly.precip, predict.precip.cycsp, predict.precip.cycsp.1))
+precip.cycsp.der$slope<-(precip.cycsp.der$predict.precip.cycsp.1-precip.cycsp.der$predict.precip.cycsp)/1
+
+#this species peaks at 117.9 mm of rain
 #significant factor in model
 
 
 #ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
 
-newData.cstig.habitat<- with(lb_all.cstig,
-                             data.frame(yearly.dd.accum = 1100,
+newData.cycsp.habitat<- with(lb_all.cycsp,
+                             data.frame(yearly.dd.accum = 1200,
                                         TRAPS=5, 
-                                        year=1992, #select year when this species is most abundant- 1990
-                                        weekly.precip=0, # species likes it dry
-                                        max.temp=28, #species maxes near 28
-                                        min.temp= 17, #species maxes near 17
-                                        SPID="CSTIG", 
-                                        HABITAT=c("maize")))#just literally list each habitat of interest, probably the peak ones
-predict(gam_lb.cstig, newData.cstig.habitat, type="link")
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=120, # species likes it dry
+                                        max.temp=35, #species maxes near 35
+                                        min.temp= 15, #species maxes near 15
+                                        SPID="CYCSP", 
+                                        HABITAT=c("poplar")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.cycsp, newData.cycsp.habitat, type="link")
 
 
-#maize max at 3.2
+#poplar max at 1.5
+
+##################### h13 
+
+lb_all.h13<-lb_all[which(lb_all$SPID=="H13"),]
+
+gam_lb.h13<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                  s(weekly.precip, sp=1)+
+                  s(max.temp, sp=1)+
+                  s(min.temp, sp=1)+ 
+                  HABITAT+
+                  s(year, sp=1)+
+                  offset(log(TRAPS)), method="REML", data=lb_all.h13, family="quasipoisson")
+summary(gam_lb.h13)
+anova(gam_lb.h13) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.h13<-visreg(gam_lb.h13, "yearly.dd.accum", partial=F, rug=FALSE, 
+                          overlay=T, scale="response", gg=TRUE,
+                          line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.h13
+
+withinyear.rain.h13<-visreg(gam_lb.h13, "weekly.precip",  partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.h13
+
+withinyear.temp.h13<-visreg(gam_lb.h13, "max.temp",  partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.h13
+
+withinyear.mintemp.h13<-visreg(gam_lb.h13, "min.temp",  partial=F, rug=FALSE, 
+                               overlay=T, scale="response", gg=TRUE,
+                               line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.h13
+
+withinyear.habitat.h13<-visreg(gam_lb.h13, "HABITAT",  partial=F, rug=FALSE, 
+                               overlay=T, scale="response", gg=TRUE,
+                               line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.h13
+
+withinyear.yearly.h13<-visreg(gam_lb.h13, "year",   partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[7]), fill=list(fill=nativepal[7], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.h13
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.h13<-plot_grid(withinyear.yearly.h13,withinyear.dd.h13,  withinyear.mintemp.h13, withinyear.temp.h13, withinyear.rain.h13, withinyear.habitat.h13,  
+                                    ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.h13
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.h13<-plot_grid(partresid, withinyear.modelplot.h13, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.h13
+
+pdf("plots/figurewithinyeargamh13.pdf", height=10, width=5)
+withinyear.plot.h13
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for h13, holding everything constant but degree days
+#from plot, h13 likes 2022, 600dd, 13min, 26 max, 0 precip, alfalfa- multiple maxima but chose ones closest to 'normal' range
+newData.h13.dd <- with(lb_all.h13,
+                       data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                  TRAPS=5, 
+                                  year=2022, #select year when this species is most abundant- 2022
+                                  weekly.precip=0, # species likes it dry
+                                  max.temp=26, #species maxes near 26
+                                  min.temp=13, #species maxes near 13
+                                  SPID="H13", 
+                                  HABITAT="alfalfa")) #species likes alfalfa best
+
+#make the same frame but for 1 more degday
+newData.h13.1.dd<- with(lb_all.h13,
+                        data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                  TRAPS=5, 
+                                  year=2022, #select year when this species is most abundant- 2022
+                                  weekly.precip=0, # species likes it dry
+                                  max.temp=26, #species maxes near 26
+                                  min.temp=13, #species maxes near 13
+                                  SPID="H13", 
+                                  HABITAT="alfalfa")) #species likes alfalfa best
+
+#make predictions
+predict.dd.h13<-predict(gam_lb.h13, newData.h13.dd, type="link")
+predict.dd.h13.1<-predict(gam_lb.h13, newData.h13.1.dd, type="link")
+
+dd.h13.der<-as.data.frame(cbind(newData.h13.dd$yearly.dd.accum, predict.dd.h13, predict.dd.h13.1))
+dd.h13.der$slope<-(dd.h13.der$predict.dd.h13.1-dd.h13.der$predict.dd.h13)/1
+
+#not a significant factor in the model
+
+#create data for h13, holding everything constant but minimum temperature
+#from plot, h13 likes 2022, 600dd, 13min, 26 max, 0 precip, alfalfa-
+newData.h13.mint <- with(lb_all.h13,
+                         data.frame(yearly.dd.accum = 600,
+                                    TRAPS=5, 
+                                    year=2022, #select year when this species is most abundant- 2022
+                                    weekly.precip=0, # species likes it dry
+                                    max.temp=26, #species maxes near 26
+                                    min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                    SPID="H13", 
+                                    HABITAT="alfalfa")) #species likes alfalfa best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.h13.1.mint<- with(lb_all.h13,
+                          data.frame(yearly.dd.accum = 600,
+                                     TRAPS=5, 
+                                     year=2022, #select year when this species is most abundant- 2022
+                                     weekly.precip=0, # species likes it dry
+                                     max.temp=26, #species maxes near 26
+                                     min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                     SPID="H13", 
+                                     HABITAT="alfalfa")) #species likes alfalfa best
+
+#make predictions
+predict.mint.h13<-predict(gam_lb.h13, newData.h13.mint, type="link")
+predict.mint.h13.1<-predict(gam_lb.h13, newData.h13.1.mint, type="link")
+
+mint.h13.der<-as.data.frame(cbind(newData.h13.mint$min.temp, predict.mint.h13, predict.mint.h13.1))
+mint.h13.der$slope<-(mint.h13.der$predict.mint.h13.1-mint.h13.der$predict.mint.h13)/1
+
+
+#not a significant factor in the model
+
+
+#create data for h13, holding everything constant but maximum temperature
+#from plot, h13 likes 2022, 600dd, 13min, 26 max, 0 precip, alfalfa-
+
+newData.h13.maxt <- with(lb_all.h13,
+                         data.frame(yearly.dd.accum = 600,
+                                    TRAPS=5, 
+                                    year=2022, #select year when this species is most abundant- 2022
+                                    weekly.precip=0, # species likes it dry
+                                    max.temp=seq(18, 40, length = 300), #use natural range of data
+                                    min.temp= 13, #species maxes near 13
+                                    SPID="H13", 
+                                    HABITAT="alfalfa")) #species likes alfalfa best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.h13.1.maxt<- with(lb_all.h13,
+                          data.frame(yearly.dd.accum = 600,
+                                     TRAPS=5, 
+                                     year=2022, #select year when this species is most abundant- 2022
+                                     weekly.precip=0, # species likes it dry
+                                     max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                     min.temp= 13, #species maxes near 13
+                                     SPID="H13", 
+                                     HABITAT="alfalfa")) #species likes alfalfa best
+
+#make predictions
+predict.maxt.h13<-predict(gam_lb.h13, newData.h13.maxt, type="link")
+predict.maxt.h13.1<-predict(gam_lb.h13, newData.h13.1.maxt, type="link")
+
+maxt.h13.der<-as.data.frame(cbind(newData.h13.maxt$max.temp, predict.maxt.h13, predict.maxt.h13.1))
+maxt.h13.der$slope<-(maxt.h13.der$predict.maxt.h13.1-maxt.h13.der$predict.maxt.h13)/1
 
 
 
+# not a significant factor in the model
+
+
+#create data for h13, holding everything constant but precipitation
+#from plot, h13 likes 2022, 600dd, 13min, 26 max, 0 precip, alfalfa-
+newData.h13.precip <- with(lb_all.h13,
+                           data.frame(yearly.dd.accum = 600,
+                                      TRAPS=5, 
+                                      year=2022, #select year when this species is most abundant- 2022
+                                      weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                      max.temp=26, #species maxes near 26
+                                      min.temp=13, #species maxes near 13
+                                      SPID="H13", 
+                                      HABITAT="alfalfa")) #species likes alfalfa best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.h13.1.precip<- with(lb_all.h13,
+                            data.frame(yearly.dd.accum = 600,
+                                       TRAPS=5, 
+                                       year=2022, #select year when this species is most abundant- 2022
+                                       weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                       max.temp=26, #species maxes near 26
+                                       min.temp=13, #species maxes near 13
+                                       SPID="H13", 
+                                       HABITAT="alfalfa")) #species likes alfalfa best
+#make predictions
+predict.precip.h13<-predict(gam_lb.h13, newData.h13.precip, type="link")
+predict.precip.h13.1<-predict(gam_lb.h13, newData.h13.1.precip, type="link")
+
+precip.h13.der<-as.data.frame(cbind(newData.h13.precip$weekly.precip, predict.precip.h13, predict.precip.h13.1))
+precip.h13.der$slope<-(precip.h13.der$predict.precip.h13.1-precip.h13.der$predict.precip.h13)/1
+
+#not a significant factor in the model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.h13.habitat<- with(lb_all.h13,
+                           data.frame(yearly.dd.accum = 600,
+                                      TRAPS=5, 
+                                      year=2022, #select year when this species is most abundant- 2022
+                                      weekly.precip=0, # species likes it dry
+                                      max.temp=26, #species maxes near 26
+                                      min.temp= 13, #species maxes near 13
+                                      SPID="H13", 
+                                      HABITAT=c("alfalfa")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.h13, newData.h13.habitat, type="link")
+
+
+#alfalfa max at -43
+
+##################### hconv 
+
+lb_all.hconv<-lb_all[which(lb_all$SPID=="HCONV"),]
+
+gam_lb.hconv<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                    s(weekly.precip, sp=1)+
+                    s(max.temp, sp=1)+
+                    s(min.temp, sp=1)+ 
+                    HABITAT+
+                    s(year, sp=1)+
+                    offset(log(TRAPS)), method="REML", data=lb_all.hconv, family="quasipoisson")
+summary(gam_lb.hconv)
+anova(gam_lb.hconv) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.hconv<-visreg(gam_lb.hconv, "yearly.dd.accum", partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.hconv
+
+withinyear.rain.hconv<-visreg(gam_lb.hconv, "weekly.precip",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.hconv
+
+withinyear.temp.hconv<-visreg(gam_lb.hconv, "max.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.hconv
+
+withinyear.mintemp.hconv<-visreg(gam_lb.hconv, "min.temp",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.hconv
+
+withinyear.habitat.hconv<-visreg(gam_lb.hconv, "HABITAT",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.hconv
+
+withinyear.yearly.hconv<-visreg(gam_lb.hconv, "year",   partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[8]), fill=list(fill=nativepal[8], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.hconv
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.hconv<-plot_grid(withinyear.yearly.hconv,withinyear.dd.hconv,  withinyear.mintemp.hconv, withinyear.temp.hconv, withinyear.rain.hconv, withinyear.habitat.hconv,  
+                                      ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.hconv
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.hconv<-plot_grid(partresid, withinyear.modelplot.hconv, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.hconv
+
+pdf("plots/figurewithinyeargamhconv.pdf", height=10, width=5)
+withinyear.plot.hconv
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for hconv, holding everything constant but degree days
+#from plot, hconv likes 1990, 1000dd, 15min, 20 max, 50 precip, deciduous- multiple maxima but chose ones closest to 'normal' range
+newData.hconv.dd <- with(lb_all.hconv,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=1990, #select year when this species is most abundant- 1990
+                                    weekly.precip=50, # species likes moderate precip
+                                    max.temp=20, #species maxes near 20
+                                    min.temp=15, #species maxes near 15
+                                    SPID="HCONV", 
+                                    HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 1 more degday
+newData.hconv.1.dd<- with(lb_all.hconv,
+                          data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                     TRAPS=5, 
+                                     year=1990, #select year when this species is most abundant- 1990
+                                     weekly.precip=50, # species likes moderate precip
+                                     max.temp=20, #species maxes near 20
+                                     min.temp=15, #species maxes near 15
+                                     SPID="HCONV", 
+                                     HABITAT="deciduous")) #species likes deciduous best
+
+
+#make predictions
+predict.dd.hconv<-predict(gam_lb.hconv, newData.hconv.dd, type="link")
+predict.dd.hconv.1<-predict(gam_lb.hconv, newData.hconv.1.dd, type="link")
+
+dd.hconv.der<-as.data.frame(cbind(newData.hconv.dd$yearly.dd.accum, predict.dd.hconv, predict.dd.hconv.1))
+dd.hconv.der$slope<-(dd.hconv.der$predict.dd.hconv.1-dd.hconv.der$predict.dd.hconv)/1
+
+#slope approaches zero at 1148 degree days and also decreases towards zero- very little early season activity, then gradual increase leading to later season peak (we look for places where the slope changes from negative to positive or vice versa)- 
+#note dd is significant in the model and data suggests two adult activity peaks- 2 generations per year
+
+#create data for hconv, holding everything constant but minimum temperature
+#from plot, hconv likes 1990, 1000dd, 15min, 20 max, 50 precip, deciduous-
+newData.hconv.mint <- with(lb_all.hconv,
+                           data.frame(yearly.dd.accum = 1000,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=50, # species likes moderate precip
+                                      max.temp=20, #species maxes near 20
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="HCONV", 
+                                      HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hconv.1.mint<- with(lb_all.hconv,
+                            data.frame(yearly.dd.accum = 1000,
+                                       TRAPS=5, 
+                                       year=1990, #select year when this species is most abundant- 1990
+                                       weekly.precip=50, # species likes moderate precip
+                                       max.temp=20, #species maxes near 20
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="HCONV", 
+                                       HABITAT="deciduous")) #species likes deciduous best
+
+#make predictions
+predict.mint.hconv<-predict(gam_lb.hconv, newData.hconv.mint, type="link")
+predict.mint.hconv.1<-predict(gam_lb.hconv, newData.hconv.1.mint, type="link")
+
+mint.hconv.der<-as.data.frame(cbind(newData.hconv.mint$min.temp, predict.mint.hconv, predict.mint.hconv.1))
+mint.hconv.der$slope<-(mint.hconv.der$predict.mint.hconv.1-mint.hconv.der$predict.mint.hconv)/1
+
+
+#slope approaches zero at minimum temperature of 14.2 C
+#significant factor in the model
+
+
+#create data for hconv, holding everything constant but maximum temperature
+#from plot, hconv likes 1990, 1000dd, 15min, 20 max, 50 precip, deciduous-
+
+newData.hconv.maxt <- with(lb_all.hconv,
+                           data.frame(yearly.dd.accum = 1000,
+                                      TRAPS=5, 
+                                      year=1990, #select year when this species is most abundant- 1990
+                                      weekly.precip=50, # species likes moderate precip
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp= 15, #species maxes near 15
+                                      SPID="HCONV", 
+                                      HABITAT="deciduous")) #species likes deciduous best
+
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hconv.1.maxt<- with(lb_all.hconv,
+                            data.frame(yearly.dd.accum = 1000,
+                                       TRAPS=5, 
+                                       year=1990, #select year when this species is most abundant- 1990
+                                       weekly.precip=50, # species likes moderate precip
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp= 15, #species maxes near 15
+                                       SPID="HCONV", 
+                                       HABITAT="deciduous")) #species likes deciduous best
+
+
+
+#make predictions
+predict.maxt.hconv<-predict(gam_lb.hconv, newData.hconv.maxt, type="link")
+predict.maxt.hconv.1<-predict(gam_lb.hconv, newData.hconv.1.maxt, type="link")
+
+maxt.hconv.der<-as.data.frame(cbind(newData.hconv.maxt$max.temp, predict.maxt.hconv, predict.maxt.hconv.1))
+maxt.hconv.der$slope<-(maxt.hconv.der$predict.maxt.hconv.1-maxt.hconv.der$predict.maxt.hconv)/1
+
+
+
+# not a significant factor in the model
+
+
+#create data for hconv, holding everything constant but precipitation
+#from plot, hconv likes 1990, 1000dd, 15min, 20 max, 50 precip, deciduous-
+newData.hconv.precip <- with(lb_all.hconv,
+                             data.frame(yearly.dd.accum = 1000,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=20, #species maxes near 20
+                                        min.temp= 15, #species maxes near 15
+                                        SPID="HCONV", 
+                                        HABITAT="deciduous")) #species likes deciduous best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hconv.1.precip<- with(lb_all.hconv,
+                              data.frame(yearly.dd.accum = 1000,
+                                         TRAPS=5, 
+                                         year=1990, #select year when this species is most abundant- 1990
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=20, #species maxes near 20
+                                         min.temp= 15, #species maxes near 15
+                                         SPID="HCONV", 
+                                         HABITAT="deciduous")) #species likes deciduous best
+
+
+#make predictions
+predict.precip.hconv<-predict(gam_lb.hconv, newData.hconv.precip, type="link")
+predict.precip.hconv.1<-predict(gam_lb.hconv, newData.hconv.1.precip, type="link")
+
+precip.hconv.der<-as.data.frame(cbind(newData.hconv.precip$weekly.precip, predict.precip.hconv, predict.precip.hconv.1))
+precip.hconv.der$slope<-(precip.hconv.der$predict.precip.hconv.1-precip.hconv.der$predict.precip.hconv)/1
+
+#this species peaks at 117.9 mm of rain
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.hconv.habitat<- with(lb_all.hconv,
+                             data.frame(yearly.dd.accum = 1000,
+                                        TRAPS=5, 
+                                        year=1990, #select year when this species is most abundant- 1990
+                                        weekly.precip=50, # species likes moderate precip
+                                        max.temp=20, #species maxes near 20
+                                        min.temp= 15, #species maxes near 15
+                                        SPID="HCONV", 
+                                        HABITAT=c("deciduous")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.hconv, newData.hconv.habitat, type="link")
+
+
+#deciduous max at -39
+
+##################### hglac 
+
+lb_all.hglac<-lb_all[which(lb_all$SPID=="HGLAC"),]
+
+gam_lb.hglac<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                    s(weekly.precip, sp=1)+
+                    s(max.temp, sp=1)+
+                    s(min.temp, sp=1)+ 
+                    HABITAT+
+                    s(year, sp=1)+
+                    offset(log(TRAPS)), method="REML", data=lb_all.hglac, family="quasipoisson")
+summary(gam_lb.hglac)
+anova(gam_lb.hglac) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.hglac<-visreg(gam_lb.hglac, "yearly.dd.accum", partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.hglac
+
+withinyear.rain.hglac<-visreg(gam_lb.hglac, "weekly.precip",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.hglac
+
+withinyear.temp.hglac<-visreg(gam_lb.hglac, "max.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.hglac
+
+withinyear.mintemp.hglac<-visreg(gam_lb.hglac, "min.temp",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.hglac
+
+withinyear.habitat.hglac<-visreg(gam_lb.hglac, "HABITAT",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.hglac
+
+withinyear.yearly.hglac<-visreg(gam_lb.hglac, "year",   partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[9]), fill=list(fill=nativepal[9], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.hglac
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.hglac<-plot_grid(withinyear.yearly.hglac,withinyear.dd.hglac,  withinyear.mintemp.hglac, withinyear.temp.hglac, withinyear.rain.hglac, withinyear.habitat.hglac,  
+                                      ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.hglac
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.hglac<-plot_grid(partresid, withinyear.modelplot.hglac, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.hglac
+
+pdf("plots/figurewithinyeargamhglac.pdf", height=10, width=5)
+withinyear.plot.hglac
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for hglac, holding everything constant but degree days
+#from plot, hglac likes 1999, 1400dd, 11min, 37 max, 60 precip, wheat- multiple maxima but chose ones closest to 'normal' range
+newData.hglac.dd <- with(lb_all.hglac,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=1999, #select year when this species is most abundant- 1999
+                                    weekly.precip=60, # species likes moderate precip
+                                    max.temp=37, #species maxes near 37
+                                    min.temp=11, #species maxes near 11
+                                    SPID="HGLAC", 
+                                    HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 1 more degday
+newData.hglac.1.dd<- with(lb_all.hglac,
+                          data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                     TRAPS=5, 
+                                     year=1999, #select year when this species is most abundant- 1999
+                                     weekly.precip=60, # species likes moderate precip
+                                     max.temp=37, #species maxes near 37
+                                     min.temp=11, #species maxes near 11
+                                     SPID="HGLAC", 
+                                     HABITAT="wheat")) #species likes wheat best
+
+
+#make predictions
+predict.dd.hglac<-predict(gam_lb.hglac, newData.hglac.dd, type="link")
+predict.dd.hglac.1<-predict(gam_lb.hglac, newData.hglac.1.dd, type="link")
+
+dd.hglac.der<-as.data.frame(cbind(newData.hglac.dd$yearly.dd.accum, predict.dd.hglac, predict.dd.hglac.1))
+dd.hglac.der$slope<-(dd.hglac.der$predict.dd.hglac.1-dd.hglac.der$predict.dd.hglac)/1
+
+#not a significant factor in the model
+
+#create data for hglac, holding everything constant but minimum temperature
+#from plot, hglac likes 1999, 1400dd, 11min, 37 max, 60 precip, wheat-
+newData.hglac.mint <- with(lb_all.hglac,
+                           data.frame(yearly.dd.accum = 1400,
+                                      TRAPS=5, 
+                                      year=1999, #select year when this species is most abundant- 1999
+                                      weekly.precip=60, # species likes moderate precip
+                                      max.temp=37, #species maxes near 37
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="HGLAC", 
+                                      HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hglac.1.mint<- with(lb_all.hglac,
+                            data.frame(yearly.dd.accum = 1400,
+                                       TRAPS=5, 
+                                       year=1999, #select year when this species is most abundant- 1999
+                                       weekly.precip=60, # species likes moderate precip
+                                       max.temp=37, #species maxes near 37
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="HGLAC", 
+                                       HABITAT="wheat")) #species likes wheat best
+
+#make predictions
+predict.mint.hglac<-predict(gam_lb.hglac, newData.hglac.mint, type="link")
+predict.mint.hglac.1<-predict(gam_lb.hglac, newData.hglac.1.mint, type="link")
+
+mint.hglac.der<-as.data.frame(cbind(newData.hglac.mint$min.temp, predict.mint.hglac, predict.mint.hglac.1))
+mint.hglac.der$slope<-(mint.hglac.der$predict.mint.hglac.1-mint.hglac.der$predict.mint.hglac)/1
+
+
+#not a significant factor in the model
+
+#create data for hglac, holding everything constant but maximum temperature
+#from plot, hglac likes 1999, 1400dd, 11min, 37 max, 60 precip, wheat-
+
+newData.hglac.maxt <- with(lb_all.hglac,
+                           data.frame(yearly.dd.accum = 1400,
+                                      TRAPS=5, 
+                                      year=1999, #select year when this species is most abundant- 1999
+                                      weekly.precip=60, # species likes moderate precip
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp=11, #species maxes near 11
+                                      SPID="HGLAC", 
+                                      HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hglac.1.maxt<- with(lb_all.hglac,
+                            data.frame(yearly.dd.accum = 1200,
+                                       TRAPS=5, 
+                                       year=1999, #select year when this species is most abundant- 1999
+                                       weekly.precip=60, # species likes moderate precip
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp=11, #species maxes near 11
+                                       SPID="HGLAC", 
+                                       HABITAT="wheat")) #species likes wheat best
+
+
+#make predictions
+predict.maxt.hglac<-predict(gam_lb.hglac, newData.hglac.maxt, type="link")
+predict.maxt.hglac.1<-predict(gam_lb.hglac, newData.hglac.1.maxt, type="link")
+
+maxt.hglac.der<-as.data.frame(cbind(newData.hglac.maxt$max.temp, predict.maxt.hglac, predict.maxt.hglac.1))
+maxt.hglac.der$slope<-(maxt.hglac.der$predict.maxt.hglac.1-maxt.hglac.der$predict.maxt.hglac)/1
+
+
+
+# not a significant factor in the model
+
+
+#create data for hglac, holding everything constant but precipitation
+#from plot, hglac likes 1999, 1400dd, 11min, 37 max, 60 precip, wheat-
+newData.hglac.precip <- with(lb_all.hglac,
+                             data.frame(yearly.dd.accum = 1400,
+                                        TRAPS=5, 
+                                        year=1999, #select year when this species is most abundant- 1999
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=37, #species maxes near 37
+                                        min.temp=11, #species maxes near 11
+                                        SPID="HGLAC", 
+                                        HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hglac.1.precip<- with(lb_all.hglac,
+                              data.frame(yearly.dd.accum = 1400,
+                                         TRAPS=5, 
+                                         year=1999, #select year when this species is most abundant- 1999
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=37, #species maxes near 37
+                                         min.temp=11, #species maxes near 11
+                                         SPID="HGLAC", 
+                                         HABITAT="wheat")) #species likes wheat best
+#make predictions
+predict.precip.hglac<-predict(gam_lb.hglac, newData.hglac.precip, type="link")
+predict.precip.hglac.1<-predict(gam_lb.hglac, newData.hglac.1.precip, type="link")
+
+precip.hglac.der<-as.data.frame(cbind(newData.hglac.precip$weekly.precip, predict.precip.hglac, predict.precip.hglac.1))
+precip.hglac.der$slope<-(precip.hglac.der$predict.precip.hglac.1-precip.hglac.der$predict.precip.hglac)/1
+
+#this species peaks at 62.7 mm of rain
+#significant factor in model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.hglac.habitat<- with(lb_all.hglac,
+                             data.frame(yearly.dd.accum = 1400,
+                                        TRAPS=5, 
+                                        year=1999, #select year when this species is most abundant- 1999
+                                        weekly.precip=60, # species likes moderate precip
+                                        max.temp=37, #species maxes near 37
+                                        min.temp= 11, #species maxes near 11
+                                        SPID="HGLAC", 
+                                        HABITAT=c("wheat")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.hglac, newData.hglac.habitat, type="link")
+
+
+#wheat max at -0.5
+
+##################### hparn 
+
+lb_all.hparn<-lb_all[which(lb_all$SPID=="HPARN"),]
+
+gam_lb.hparn<-gam(SumOfADULTS~s(yearly.dd.accum, sp=1)+
+                    s(weekly.precip, sp=1)+
+                    s(max.temp, sp=1)+
+                    s(min.temp, sp=1)+ 
+                    HABITAT+
+                    s(year, sp=1)+
+                    offset(log(TRAPS)), method="REML", data=lb_all.hparn, family="quasipoisson")
+summary(gam_lb.hparn)
+anova(gam_lb.hparn) #significance of parametric terms
+
+#not run- causes hangups in casual runs!
+# #check concurvity
+# concurvity(gam_lb)
+# #looks fine, sweet!
+# gam.check(gam_lb)
+
+
+withinyear.dd.hparn<-visreg(gam_lb.hparn, "yearly.dd.accum", partial=F, rug=FALSE, 
+                            overlay=T, scale="response", gg=TRUE,
+                            line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Degree day accumulation", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.dd.hparn
+
+withinyear.rain.hparn<-visreg(gam_lb.hparn, "weekly.precip",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Total precip within week (mm)", y="")+
+  theme_classic()+ theme(legend.position = "none")
+
+withinyear.rain.hparn
+
+withinyear.temp.hparn<-visreg(gam_lb.hparn, "max.temp",  partial=F, rug=FALSE, 
+                              overlay=T, scale="response", gg=TRUE,
+                              line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Maximum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.temp.hparn
+
+withinyear.mintemp.hparn<-visreg(gam_lb.hparn, "min.temp",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Minimum temperature within week (C)", y="")+
+  theme_classic()+ theme(legend.position = "none")+
+  coord_cartesian(xlim=c(0, 40))
+
+withinyear.mintemp.hparn
+
+withinyear.habitat.hparn<-visreg(gam_lb.hparn, "HABITAT",  partial=F, rug=FALSE, 
+                                 overlay=T, scale="response", gg=TRUE,
+                                 line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Habitat", y="")+
+  theme_classic()+ theme(legend.position = "none", axis.text.x=element_text(angle=90, vjust=0.5, hjust=1))
+
+withinyear.habitat.hparn
+
+withinyear.yearly.hparn<-visreg(gam_lb.hparn, "year",   partial=F, rug=FALSE, 
+                                overlay=T, scale="response", gg=TRUE,
+                                line=list(lty=1, col=nativepal[10]), fill=list(fill=nativepal[10], alpha=0.4))+
+  labs(x="Year", y="")+
+  theme_classic()+ theme(legend.position = c(0.92, 0.85),legend.background = element_rect(fill='transparent'))+
+  coord_cartesian(xlim=c(1989, 2024))
+
+
+withinyear.yearly.hparn
+
+#plot the withinyear model all together:
+
+withinyear.modelplot.hparn<-plot_grid(withinyear.yearly.hparn,withinyear.dd.hparn,  withinyear.mintemp.hparn, withinyear.temp.hparn, withinyear.rain.hparn, withinyear.habitat.hparn,  
+                                      ncol=1, rel_heights = c(1, 1, 1, 1, 1,  2), labels=c('A', 'B', 'C', 'D', 'E', 'F'), align="v")
+withinyear.modelplot.hparn
+
+#create overall y axis label
+partresid<-text_grob(paste("        Partial residual captures"), color="black", size=12, rot=90)
+
+
+#now replot with grob label
+withinyear.plot.hparn<-plot_grid(partresid, withinyear.modelplot.hparn, ncol=2, rel_widths = c(1,11))
+
+withinyear.plot.hparn
+
+pdf("plots/figurewithinyeargamhparn.pdf", height=10, width=5)
+withinyear.plot.hparn
+dev.off()
+
+
+#we'll want to extract the data associated with activity peaks
+
+#ok, I think we found the method we should use! here's the tutorial:
+# https://fromthebottomoftheheap.net/2014/05/15/identifying-periods-of-change-with-gams/
+
+#first we create a new dataframe that we can use our model to predict the values for optima
+#we use good guesses at values for other optima to create conditions where species is reasonably abundant for modelled parameter 
+
+#create data for hparn, holding everything constant but degree days
+#from plot, hparn likes 1998, 1400dd, 13 min, 38 max, 60 precip, wheat- multiple maxima but chose ones closest to 'normal' range
+newData.hparn.dd <- with(lb_all.hparn,
+                         data.frame(yearly.dd.accum = seq(0, 1500, length = 300),#use natural range of data
+                                    TRAPS=5, 
+                                    year=1998, #select year when this species is most abundant- 1998
+                                    weekly.precip=60, # species likes moderate precip
+                                    max.temp=38, #species maxes near 38
+                                    min.temp=13, #species maxes near 13
+                                    SPID="HPARN", 
+                                    HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 1 more degday
+newData.hparn.1.dd<- with(lb_all.hparn,
+                          data.frame(yearly.dd.accum = seq(1, 1501, length = 300), #use natural range of data
+                                     TRAPS=5, 
+                                     year=1998, #select year when this species is most abundant- 1998
+                                     weekly.precip=60, # species likes moderate precip
+                                     max.temp=38, #species maxes near 38
+                                     min.temp=13, #species maxes near 13
+                                     SPID="HPARN", 
+                                     HABITAT="wheat")) #species likes wheat best
+
+#make predictions
+predict.dd.hparn<-predict(gam_lb.hparn, newData.hparn.dd, type="link")
+predict.dd.hparn.1<-predict(gam_lb.hparn, newData.hparn.1.dd, type="link")
+
+dd.hparn.der<-as.data.frame(cbind(newData.hparn.dd$yearly.dd.accum, predict.dd.hparn, predict.dd.hparn.1))
+dd.hparn.der$slope<-(dd.hparn.der$predict.dd.hparn.1-dd.hparn.der$predict.dd.hparn)/1
+
+#slope approaches zero at 426 degree days- little early season activity, then gradual increase leading to later season peak (we look for places where the slope changes from negative to positive or vice versa)- 
+#note dd is significant in the model and data suggests two adult activity peaks- 2 generations per year
+
+#create data for hparn, holding everything constant but minimum temperature
+#from plot, hparn likes 1998, 1400dd, 13 min, 38 max, 60 precip, wheat-
+newData.hparn.mint <- with(lb_all.hparn,
+                           data.frame(yearly.dd.accum = 1400,
+                                      TRAPS=5, 
+                                      year=1998, #select year when this species is most abundant- 1998
+                                      weekly.precip=60, # species likes moderate precip
+                                      max.temp=38, #species maxes near 38
+                                      min.temp= seq(-5, 18, length = 300), #use natural range of data
+                                      SPID="HPARN", 
+                                      HABITAT="wheat")) #species likes wheat best
+
+#make the same frame but for 0.2 more degrees celcius
+newData.hparn.1.mint<- with(lb_all.hparn,
+                            data.frame(yearly.dd.accum = 1400,
+                                       TRAPS=5, 
+                                       year=1998, #select year when this species is most abundant- 1998
+                                       weekly.precip=60, # species likes moderate precip
+                                       max.temp=38, #species maxes near 38
+                                       min.temp=seq(-4.8, 18.2, length = 300), #use natural range of data
+                                       SPID="HPARN", 
+                                       HABITAT="wheat")) #species likes wheat best
+
+#make predictions
+predict.mint.hparn<-predict(gam_lb.hparn, newData.hparn.mint, type="link")
+predict.mint.hparn.1<-predict(gam_lb.hparn, newData.hparn.1.mint, type="link")
+
+mint.hparn.der<-as.data.frame(cbind(newData.hparn.mint$min.temp, predict.mint.hparn, predict.mint.hparn.1))
+mint.hparn.der$slope<-(mint.hparn.der$predict.mint.hparn.1-mint.hparn.der$predict.mint.hparn)/1
+
+
+#not a significant factor in the model
+
+
+#create data for hparn, holding everything constant but maximum temperature
+#from plot, hparn likes 1998, 1400dd, 13 min, 38 max, 60 precip, wheat-
+
+newData.hparn.maxt <- with(lb_all.hparn,
+                           data.frame(yearly.dd.accum = 1400,
+                                      TRAPS=5, 
+                                      year=1998, #select year when this species is most abundant- 1998
+                                      weekly.precip=60, # species likes moderate precip
+                                      max.temp=seq(18, 40, length = 300), #use natural range of data
+                                      min.temp=13, #species maxes near 13
+                                      SPID="HPARN", 
+                                      HABITAT="wheat")) #species likes wheat best
+
+newData.hparn.1.maxt<- with(lb_all.hparn,
+                            data.frame(yearly.dd.accum = 1400,
+                                       TRAPS=5, 
+                                       year=1998, #select year when this species is most abundant- 1998
+                                       weekly.precip=60, # species likes moderate precip
+                                       max.temp=seq(18.2, 40.2, length = 300), #use natural range of data
+                                       min.temp=13, #species maxes near 13
+                                       SPID="HPARN", 
+                                       HABITAT="wheat")) #species likes wheat best
+
+#make predictions
+predict.maxt.hparn<-predict(gam_lb.hparn, newData.hparn.maxt, type="link")
+predict.maxt.hparn.1<-predict(gam_lb.hparn, newData.hparn.1.maxt, type="link")
+
+maxt.hparn.der<-as.data.frame(cbind(newData.hparn.maxt$max.temp, predict.maxt.hparn, predict.maxt.hparn.1))
+maxt.hparn.der$slope<-(maxt.hparn.der$predict.maxt.hparn.1-maxt.hparn.der$predict.maxt.hparn)/1
+
+
+
+# peak at 26.1 and then an increase toward 40 degrees
+# significant factor in the model
+
+#create data for hparn, holding everything constant but precipitation
+#from plot, hparn likes 1998, 1400dd, 13 min, 38 max, 60 precip, wheat-
+newData.hparn.precip <- with(lb_all.hparn,
+                             data.frame(yearly.dd.accum = 1400,
+                                        TRAPS=5, 
+                                        year=1998, #select year when this species is most abundant- 1998
+                                        weekly.precip=seq(0, 150, length = 300), #use natural range of data
+                                        max.temp=38, #species maxes near 38
+                                        min.temp=13, #species maxes near 13
+                                        SPID="HPARN", 
+                                        HABITAT="wheat")) #species likes wheat best
+#make the same frame but for 0.2 more degrees celcius
+newData.hparn.1.precip<- with(lb_all.hparn,
+                              data.frame(yearly.dd.accum = 1400,
+                                         TRAPS=5, 
+                                         year=1998, #select year when this species is most abundant- 1998
+                                         weekly.precip=seq(1, 151, length = 300), #use natural range of data
+                                         max.temp=38, #species maxes near 38
+                                         min.temp=13, #species maxes near 13
+                                         SPID="HPARN", 
+                                         HABITAT="wheat")) #species likes wheat best
+#make predictions
+predict.precip.hparn<-predict(gam_lb.hparn, newData.hparn.precip, type="link")
+predict.precip.hparn.1<-predict(gam_lb.hparn, newData.hparn.1.precip, type="link")
+
+precip.hparn.der<-as.data.frame(cbind(newData.hparn.precip$weekly.precip, predict.precip.hparn, predict.precip.hparn.1))
+precip.hparn.der$slope<-(precip.hparn.der$predict.precip.hparn.1-precip.hparn.der$predict.precip.hparn)/1
+
+#not a significant factor in the model
+
+
+#ok, now let's predict the mean captures for each habitat, given peak abundance in other parameters 
+
+newData.hparn.habitat<- with(lb_all.hparn,
+                             data.frame(yearly.dd.accum = 1400,
+                                        TRAPS=5, 
+                                        year=1998, #select year when this species is most abundant- 1998
+                                        weekly.precip=60, # species likes moderate precip
+                                        max.temp=38, #species maxes near 38
+                                        min.temp=13, #species maxes near 13
+                                        SPID="HPARN", 
+                                        HABITAT=c("wheat")))#just literally list each habitat of interest, probably the peak ones
+predict(gam_lb.hparn, newData.hparn.habitat, type="link")
+
+
+#wheat max at 0.4
