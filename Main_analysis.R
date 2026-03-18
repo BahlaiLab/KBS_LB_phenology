@@ -687,25 +687,25 @@ plot(fit.year)
 ord.week<-metaMDS(com.matrix.week, autotransform=TRUE)
 ord.week
 
-plot(ord.week, disp='sites', type='n')
+plot(ord.week, disp='species', type='n')
 #match up formatting to above
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[1], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="ABIPN")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[2], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="BURSI")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[3], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CMAC")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[4], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CSTIG")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[5], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CTRIF")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[6], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="CYCSP")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[7], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="H13")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[8], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HCONV")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[9], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HGLAC")
-ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[10], kind="ehull", conf=0.95, label=FALSE, cex=0.75, show.groups="HPARN")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[1], kind="se", conf=0.95, label=T, cex=0.75, show.groups="ABIPN")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[2], kind="se", conf=0.95, label=T, cex=0.75, show.groups="BURSI")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[3], kind="se", conf=0.95, label=T, cex=0.75, show.groups="CMAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[4], kind="se", conf=0.95, label=T, cex=0.75, show.groups="CSTIG")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[5], kind="se", conf=0.95, label=T, cex=0.75, show.groups="CTRIF")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[6], kind="se", conf=0.95, label=T, cex=0.75, show.groups="CYCSP")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[7], kind="se", conf=0.95, label=T, cex=0.75, show.groups="H13")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[8], kind="se", conf=0.95, label=T, cex=0.75, show.groups="HCONV")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[9], kind="se", conf=0.95, label=T, cex=0.75, show.groups="HGLAC")
+ordiellipse(ord.week, landscape.week.1$SPID, draw="polygon", col=nativepal[10], kind="se", conf=0.95, label=T, cex=0.75, show.groups="HPARN")
 
-ordilabel(ord.week, display="species", cex=0.75, col="black")
+#ordilabel(ord.week, display="species", cex=0.75, col="black")
 
 #bring the relevant environmental data back into our environmental frame
 weekly.context<-merge(landscape.week.1, weather_weekly, all.x = T)
 
-#is the spatiotemporal distribution of harmonia different from that of C7?
+#is the spatiotemporal distribution of the native species different from each other?
 #we will do a permanova to check
 specmod<-adonis2(com.matrix.week~SPID, data=landscape.week.1, method="bray")
 specmod
@@ -714,131 +714,91 @@ specmod
 #we're using the P value and R square, and paying attention to which variables seem too colinear to include
 
 fit.week<-envfit(ord.week~year+
-                   weekly.precip+max.temp+min.temp+yearly.dd.accum,
+                  min.temp+yearly.dd.accum,
                  data=weekly.context, perm=999)
 summary(fit.week)
 fit.week
 
 plot(fit.week)
 
-# #save to pdf
-# pdf("plots/NMDS_weekly.pdf", height=6, width=6)
-# plot(ord.week, disp='sites', type='n')
-# points(ord.week, display="sites", select=which(landscape.week.1$SPID=="HAXY"), pch=19, cex=0.5,col="orange")
-# points(ord.week, display="sites", select=which(landscape.week.1$SPID=="C7"), pch=15, cex=0.5, col="red")
-# ordilabel(ord.week, display="species", cex=0.75, col="black")
-# plot(fit.week)
-# dev.off()
+#######
+#going to replot this as a ggplot object
+
+library(ggplot2)
+library(dplyr)
+
+# site scores
+sites_week <- as.data.frame(scores(ord.week, display = "sites"))
+sites_week$SPID <- landscape.week.1$SPID
+sites_week$year <- landscape.week.1$year
+sites_week$week <- landscape.week.1$week
+
+# species scores
+species_week <- as.data.frame(scores(ord.week, display = "species"))
+species_week$HABITAT <- rownames(species_week)
+
+colnames(sites_week)
+
+centroids <- sites_week %>%
+  group_by(SPID) %>%
+  summarise(NMDS1 = mean(NMDS1),
+            NMDS2 = mean(NMDS2))
+
+#create plot
+library(ggrepel)
+
+nativenmds<-ggplot(sites_week, aes(NMDS1, NMDS2, color = SPID)) +
+  stat_ellipse(aes(fill = SPID),
+               type = "t",
+               level = 0.9,  #90% confidence band
+               geom = "polygon",
+               alpha = 0.2,
+               color = NA) +
+  #stat_ellipse(type = "t", level = 0.95, linewidth = 1) +
+  #geom_point(size = 2, alpha = 0.6) +
+  
+  # labels
+  geom_text_repel(
+    data = centroids,
+    aes(NMDS1, NMDS2, label = SPID),  # label only
+    color = "black",                   # text stays black
+    fontface = "bold",
+    size = 4,
+    show.legend = FALSE,
+    direction = "both",
+    force = 2,
+    box.padding = 0.5,
+    point.padding = 0.2,
+    min.segment.length = 0,
+    segment.size = 0.4,
+    segment.alpha = 0.8,
+    
+    # now map leader lines manually
+    segment.color = "black" # nativepal[match(centroids$SPID, unique(centroids$SPID))]
+  )+
+  
+  scale_color_manual(values = nativepal) +
+  scale_fill_manual(values = nativepal) +
+  # add small colored centroid points
+  geom_point(
+    data = centroids,
+    aes(x = NMDS1, y = NMDS2, fill = SPID),
+    color = "black",       # black outline
+    shape = 21,            # filled circle
+    size = 4               # adjust size
+  )+
+  #coord_equal() +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+nativenmds
+
+#save to pdf
+pdf("plots/NMDS_weekly.pdf", height=6, width=6)
+nativenmds
+dev.off()
 
 
-##### not run- section where we're trying to bring these plots into ggplot- it's just too messy to do this with 14 
-# species and base r is easier to customize for this
-
-# #built a two-panel PDF
-# #guh, looks like with the base vegan plots it's still easiest to do the base R
-# #can we turn these plots into grobs? extract the data, remember we've transposed it so plant 
-# #community was across the top of the matrix
-# 
-# #yearly
-# year.scores.species<-as.data.frame(scores(ord.year, "site"))
-# year.scores.plant<-as.data.frame(scores(ord.year, "species"))
-# year.scores.plant$Community <- rownames(year.scores.plant)
-# 
-# 
-# arrow_factor<-ordiArrowMul(fit.year)
-# year.data.fit<-as.data.frame(scores(fit.year, display="vectors"))*arrow_factor
-# year.data.fit$vari<-rownames(year.data.fit)
-# 
-# #make the names on the vectors nicer
-# year.data.fit$vari<-gsub("precip35.dif","precip35", year.data.fit$vari)
-# year.data.fit$vari<-gsub("dd35.dif","dd35", year.data.fit$vari)
-# arrow_factor<-ordiArrowMul(fit.year)
-# fudgexy<-c(0.1, 0.14, -0.2)#jitter the vector labels a bit
-# fudgeyy<-c(-0.08, -0.06, 0.12)
-# 
-# 
-# library(dplyr)
-# year.ellipse.labels <- year.scores.species %>%
-#   group_by(landscape.year.1$SPID) %>%
-#   summarise(NMDS1 = mean(NMDS1),
-#             NMDS2 = mean(NMDS2))
-# 
-# names(year.ellipse.labels)[1] <- 'SPID'
-# 
-# year.hulls <- year.scores.species %>%
-#   group_by(landscape.year.1$SPID) %>%
-#   slice(chull(NMDS1, NMDS2))
-# names(year.hulls)[3] <- 'SPID'
-# 
-# 
-# yearnmds<-ggplot()+
-#   geom_point(data=year.scores.species,
-#              aes(x=NMDS1,y=NMDS2,shape=landscape.year.1$SPID,colour=landscape.year.1$SPID), size=1)+# add the point markers
-#   #scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
-#   #scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
-#   geom_polygon(data = year.hulls,
-#                aes(x = NMDS1, y = NMDS2,  group = SPID, fill=SPID),
-#                alpha = 0.3, color = "black", linewidth = 0.3)+
-#   geom_text(data = year.ellipse.labels,
-#             aes(x = NMDS1, y = NMDS2, label = SPID),
-#              size = 5, fontface = "bold", color = "black")+
-#   geom_segment(data=year.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
-#                arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
-#   geom_label(data=year.data.fit, aes(x=NMDS1+fudgexy, y=NMDS2+fudgeyy, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
-#   geom_label(data=year.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
-#   coord_fixed()+
-#   theme_classic()+
-#   theme(legend.position = "none")
-# 
-# yearnmds
-# 
-# #weekly
-# 
-# 
-# week.scores.species<-as.data.frame(scores(ord.week, "site"))
-# week.scores.plant<-as.data.frame(scores(ord.week, "species"))
-# week.scores.plant$Community <- rownames(week.scores.plant)
-# 
-# 
-# arrow_factorw<-ordiArrowMul(fit.week)
-# week.data.fit<-as.data.frame(scores(fit.week, display="vectors"))*arrow_factorw
-# week.data.fit$vari<-rownames(week.data.fit)
-# 
-# #make the names on the vectors nicer
-# week.data.fit$vari<-gsub("yearly.precip.accum","precip", week.data.fit$vari)
-# week.data.fit$vari<-gsub("yearly.dd.accum","dd", week.data.fit$vari)
-# fudgex<-c(0.15, -0.285, 0)#jitter the vector labels a bit
-# fudgey<-c(0.15, -0.08, 0.17)#jitter the vector labels a bit
-# 
-# weeknmds<-ggplot()+
-#   geom_point(data=week.scores.species,
-#              aes(x=NMDS1,y=NMDS2,shape=landscape.week.1$SPID,colour=landscape.week.1$SPID), size=1)+# add the point markers
-#   scale_colour_manual(values=c("C7" = "darkred", "HAXY" = "darkorange"), labels=c("C7", "HA")) +
-#   scale_shape_manual(values=c("C7" = 4, "HAXY" = 1), labels=c("C7", "HA"))+
-#   geom_segment(data=week.data.fit, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), 
-#                arrow=arrow(length = unit(0.03, "npc")), size=0.8, color="blue")+
-#   geom_label(data=week.data.fit, aes(x=NMDS1+fudgex, y=NMDS2+fudgey, label=vari),size= 5, color="blue", fill="white", alpha=0.7, label.size=NA)+
-#   geom_label(data=week.scores.plant,aes(x=NMDS1,y=NMDS2,label=Community),size=4,vjust=0, fill="white", alpha=0.9) +  # add the site labels
-#   coord_fixed()+
-#   theme_classic()+
-#   theme(legend.position = "none")
-# 
-# weeknmds
-# 
-# #ok, finally. Put it together
-# ggnmds<-plot_grid(yearnmds, weeknmds,  ncol=1, rel_widths=c(1), labels=c('A', 'B'), 
-#                      align="h", axis="l")
-# 
-# ggnmds
-# 
-# 
-# 
-# pdf("plots/figureNMSDs1.pdf", height=10, width=6)
-# ggnmds
-# dev.off()
-# 
-# 
-# 
 
 
 # let's rough in our gam models. Just like with the multivariate analysis, we'll look at
